@@ -1,8 +1,8 @@
 import wifi_connector
 
 # Configuración WiFi (modifica con tus credenciales)
-SSID = 'TU_SSID'
-PASSWORD = 'TU_PASSWORD'
+SSID = 'Cudy-0138'
+PASSWORD = '41659458'
 
 # Intentar conexión usando el conector simple
 try:
