@@ -6,7 +6,8 @@ import machine
 
 # Configuración WiFi
 SSID = 'Cudy-0138'
-PASSWORD = '41659456'
+PASSWORD = '41659458'
+
 def menu_inicio(timeout_segundos=5):
     """Muestra un menú para interceptar el arranque y evitar bucles."""
     print("\n" + "="*40)
