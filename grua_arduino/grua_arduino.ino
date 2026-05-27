@@ -42,6 +42,8 @@ const unsigned long DEBOUNCE_MS = 50;
 char webCommand = 'S';
 unsigned long lastWebCommandTime = 0;
 bool modoWeb = false;               // false = Manual, true = Web
+unsigned long lastTelemetryTime = 0;
+const unsigned long TELEMETRY_INTERVAL_MS = 100;
 
 // ---- Variables de Debounce del Botón ----
 bool lastButtonState = HIGH;         // Pull-up: reposo = HIGH
@@ -74,7 +76,7 @@ void setup() {
   detenerGiro();
 
   // Enviar estado de modo inicial al ESP32
-  Serial.write('J'); // Modo Manual por defecto
+  Serial.print("S:J,S,S,S\n"); // Telemetría inicial: Manual, detenido
 }
 
 void loop() {
@@ -89,6 +91,50 @@ void loop() {
   controlarCarro(joyX);
   controlarElevacion(joyY);
   controlarGiro(joyZ);
+
+  enviarTelemetria(joyX, joyY, joyZ);
+}
+
+// ============================================================
+// Envío de Telemetría Serial al ESP32
+// ============================================================
+void enviarTelemetria(int joyX, int joyY, int joyZ) {
+  if (millis() - lastTelemetryTime >= TELEMETRY_INTERVAL_MS) {
+    lastTelemetryTime = millis();
+    
+    char carroDir = 'S';
+    char elevDir = 'S';
+    char giroDir = 'S';
+    
+    if (modoWeb) {
+      if (webCommand == 'F') carroDir = 'F';
+      else if (webCommand == 'B') carroDir = 'B';
+      
+      if (webCommand == 'U') elevDir = 'U';
+      else if (webCommand == 'D') elevDir = 'D';
+      
+      if (webCommand == 'L') giroDir = 'L';
+      else if (webCommand == 'R') giroDir = 'R';
+    } else {
+      if (joyX < DEADBAND_LOW) carroDir = 'F';
+      else if (joyX > DEADBAND_HIGH) carroDir = 'B';
+      
+      if (joyY < DEADBAND_LOW) elevDir = 'D';
+      else if (joyY > DEADBAND_HIGH) elevDir = 'U';
+      
+      if (joyZ < DEADBAND_LOW) giroDir = 'L';
+      else if (joyZ > DEADBAND_HIGH) giroDir = 'R';
+    }
+    
+    Serial.print("S:");
+    Serial.print(modoWeb ? 'W' : 'J');
+    Serial.print(",");
+    Serial.print(carroDir);
+    Serial.print(",");
+    Serial.print(elevDir);
+    Serial.print(",");
+    Serial.println(giroDir);
+  }
 }
 
 // ============================================================
