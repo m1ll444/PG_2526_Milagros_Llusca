@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Control Grúa Torre</title>
-    <style>
+    <title>Control Grúa Torre</title>    <style>
         :root {
             --bg-color: #0f172a;
             --surface-color: rgba(30, 41, 59, 0.7);
@@ -64,6 +63,33 @@
             box-shadow: 0 0 10px #10b981;
         }
 
+        /* ============ DASHBOARD CONTAINER ============ */
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 900px;
+            padding: 0 1.5rem;
+            box-sizing: border-box;
+        }
+
+        @media (min-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr 1.2fr;
+                align-items: start;
+                gap: 2rem;
+            }
+        }
+
+        .controls-column, .monitoring-column {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
         /* ============ MODE SWITCH ============ */
         .mode-container {
             background: var(--surface-color);
@@ -72,12 +98,10 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 1.5rem;
             padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
             gap: 1rem;
             width: 100%;
-            max-width: 400px;
             box-sizing: border-box;
             box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
         }
@@ -167,8 +191,6 @@
             grid-template-columns: 1fr;
             gap: 1.5rem;
             width: 100%;
-            max-width: 400px;
-            padding: 0 1.5rem;
             box-sizing: border-box;
             transition: opacity 0.3s ease, filter 0.3s ease;
         }
@@ -190,6 +212,7 @@
             flex-direction: column;
             align-items: center;
             box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            width: 100%;
         }
 
         .control-title {
@@ -240,8 +263,6 @@
             border-color: rgba(239, 68, 68, 0.3);
             color: var(--danger-color);
             width: 100%;
-            max-width: 400px;
-            margin-top: 0.5rem;
             font-size: 1rem;
             font-weight: 600;
             padding: 1rem;
@@ -266,7 +287,7 @@
             text-align: center;
             color: var(--text-muted);
             font-size: 0.8rem;
-            margin-top: 0.5rem;
+            margin-top: -0.5rem;
             opacity: 0;
             transition: opacity 0.3s ease;
             padding: 0 1.5rem;
@@ -276,78 +297,266 @@
             opacity: 1;
         }
 
+        /* ============ MONITORING PANEL ============ */
+        .monitoring-panel {
+            background: var(--surface-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .visualizer-container {
+            width: 100%;
+            height: 280px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .telemetry-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            width: 100%;
+            margin-top: 1.25rem;
+        }
+
+        .telemetry-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 1rem;
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .telemetry-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .telemetry-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #60a5fa;
+            font-family: monospace;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .telemetry-dir {
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .telemetry-dir.active {
+            background: rgba(59, 130, 246, 0.25);
+            color: #60a5fa;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+        }
+
         .footer-spacer {
             height: 2rem;
         }
-
-    </style>
+    </style>>
 </head>
 <body>
 
-    <h1>Grúa Torre</h1>
+    <h1>Control Grúa Torre</h1>
     <div class="status">
         <div class="status-dot"></div>
         <span>Sistema Online</span>
     </div>
 
-    <!-- Mode Switch -->
-    <div class="mode-container">
-        <span class="mode-label">Modo</span>
-        <label class="switch" id="mode-switch-label">
-            <input type="checkbox" id="mode-toggle">
-            <span class="slider"></span>
-        </label>
-        <span class="mode-indicator manual" id="mode-text">MANUAL</span>
+    <div class="dashboard-container">
+        <!-- Columna Izquierda: Controles -->
+        <div class="controls-column">
+            <!-- Mode Switch -->
+            <div class="mode-container">
+                <span class="mode-label">Modo</span>
+                <label class="switch" id="mode-switch-label">
+                    <input type="checkbox" id="mode-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="mode-indicator manual" id="mode-text">MANUAL</span>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-container disabled" id="controls-container">
+                <!-- Control de Carro -->
+                <div class="control-group">
+                    <div class="control-title">Carro</div>
+                    <div class="linear-controls">
+                        <button class="btn command-btn" data-cmd="B">
+                            <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+                        </button>
+                        <button class="btn command-btn" data-cmd="F">
+                            <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Control de Elevación -->
+                <div class="control-group">
+                    <div class="control-title">Elevación</div>
+                    <div class="linear-controls">
+                        <button class="btn command-btn" data-cmd="D">
+                            <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                        </button>
+                        <button class="btn command-btn" data-cmd="U">
+                            <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Control de Giro -->
+                <div class="control-group">
+                    <div class="control-title">Giro</div>
+                    <div class="linear-controls">
+                        <button class="btn command-btn" data-cmd="L">
+                            <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+                        </button>
+                        <button class="btn command-btn" data-cmd="R">
+                            <svg viewBox="0 0 24 24"><path d="M11.5 8c2.65 0 5.05.99 6.9 2.6L22 7v9h-9l3.62-3.62C15.23 11.22 13.46 10.5 11.5 10.5c-3.54 0-6.55 2.31-7.6 5.5l-2.37-.78C2.92 11.03 6.85 8 11.5 8z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Parada de Emergencia -->
+                <button class="btn btn-stop command-btn" data-cmd="S">PARADA / STOP</button>
+            </div>
+
+            <p class="disabled-notice visible" id="disabled-notice">
+                ⚠ Activa el modo WEB para controlar desde aquí
+            </p>
+        </div>
+
+        <!-- Columna Derecha: Monitoreo -->
+        <div class="monitoring-column">
+            <div class="monitoring-panel">
+                <div class="control-title" style="margin-bottom: 0.75rem; text-align: center;">Monitoreo de Operación</div>
+                
+                <div class="visualizer-container">
+                    <svg id="crane-svg" viewBox="0 0 320 260" width="100%" height="100%">
+                        <defs>
+                            <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        
+                        <!-- Radar/Base Holográfica -->
+                        <ellipse cx="160" cy="220" rx="90" ry="45" fill="none" stroke="rgba(59, 130, 246, 0.15)" stroke-width="1" stroke-dasharray="4 4" />
+                        <ellipse cx="160" cy="220" rx="60" ry="30" fill="none" stroke="rgba(59, 130, 246, 0.1)" stroke-width="1" stroke-dasharray="4 4" />
+                        <ellipse cx="160" cy="220" rx="30" ry="15" fill="none" stroke="rgba(59, 130, 246, 0.05)" stroke-width="1" stroke-dasharray="4 4" />
+                        <line x1="70" y1="220" x2="250" y2="220" stroke="rgba(59, 130, 246, 0.08)" stroke-width="1" />
+                        <line x1="160" y1="175" x2="160" y2="265" stroke="rgba(59, 130, 246, 0.08)" stroke-width="1" />
+                        
+                        <!-- Base Isométrica -->
+                        <polygon points="145,220 160,212 175,220 160,228" fill="rgba(148, 163, 184, 0.15)" stroke="rgba(148, 163, 184, 0.4)" stroke-width="1" />
+                        
+                        <!-- Mástil / Estructura Vertical -->
+                        <g stroke="rgba(148, 163, 184, 0.4)" stroke-width="1.5">
+                            <line x1="153" y1="80" x2="153" y2="220" />
+                            <line x1="167" y1="80" x2="167" y2="220" />
+                            <line x1="153" y1="100" x2="167" y2="100" />
+                            <line x1="153" y1="120" x2="167" y2="120" />
+                            <line x1="153" y1="140" x2="167" y2="140" />
+                            <line x1="153" y1="160" x2="167" y2="160" />
+                            <line x1="153" y1="180" x2="167" y2="180" />
+                            <line x1="153" y1="200" x2="167" y2="200" />
+                            <line x1="153" y1="80" x2="167" y2="100" />
+                            <line x1="153" y1="120" x2="167" y2="100" />
+                            <line x1="153" y1="120" x2="167" y2="140" />
+                            <line x1="153" y1="160" x2="167" y2="140" />
+                            <line x1="153" y1="160" x2="167" y2="180" />
+                            <line x1="153" y1="200" x2="167" y2="180" />
+                            <line x1="153" y1="200" x2="167" y2="220" />
+                        </g>
+                        
+                        <!-- Cúspide (Pórtico) -->
+                        <polygon points="153,80 160,55 167,80" fill="none" stroke="rgba(148, 163, 184, 0.5)" stroke-width="1.5" />
+                        
+                        <!-- Tirantes Estructurales Dinámicos -->
+                        <line id="tie-counter" x1="160" y1="55" x2="160" y2="80" stroke="rgba(148, 163, 184, 0.4)" stroke-dasharray="2 2" stroke-width="1" />
+                        <line id="tie-jib" x1="160" y1="55" x2="160" y2="80" stroke="rgba(148, 163, 184, 0.4)" stroke-dasharray="2 2" stroke-width="1" />
+                        
+                        <!-- Pluma, Contrapluma y Cabina -->
+                        <line id="counter-jib-line" x1="160" y1="80" x2="120" y2="80" stroke="#475569" stroke-width="2" />
+                        <polygon id="counterweight" points="-5,-4 5,-4 3,6 -3,6" fill="#ef4444" stroke="#b91c1c" stroke-width="1" />
+                        
+                        <line id="jib-line" x1="160" y1="80" x2="260" y2="80" stroke="#3b82f6" stroke-width="3" filter="url(#neon-glow)" />
+                        <polygon id="cabin" points="-4,-6 4,-6 6,3 -2,3" fill="rgba(59, 130, 246, 0.8)" stroke="#2563eb" stroke-width="1" />
+                        
+                        <!-- Carro desplazable (Trolley) -->
+                        <rect id="trolley" x="-4" y="-2" width="8" height="4" rx="1" fill="#fbbf24" stroke="#d97706" stroke-width="1" />
+                        
+                        <!-- Cable de Elevación -->
+                        <line id="hoist-cable" x1="0" y1="0" x2="0" y2="50" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="1 1" />
+                        
+                        <!-- Gancho -->
+                        <g id="hook-group">
+                            <path d="M -2,0 L 2,0 M 0,0 L 0,4 A 2.5,2.5 0 0 1 -2.5,6.5 A 1.2,1.2 0 0 1 -2.5,5" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" />
+                        </g>
+                    </svg>
+                </div>
+                
+                <!-- Telemetría Numérica -->
+                <div class="telemetry-grid">
+                    <div class="telemetry-item">
+                        <span class="telemetry-label">Giro</span>
+                        <span class="telemetry-value" id="tel-giro">0°</span>
+                        <div style="display:flex; justify-content:center; gap:0.25rem; margin-top:0.25rem;">
+                            <span class="telemetry-dir" id="dir-L">◀ L</span>
+                            <span class="telemetry-dir" id="dir-R">R ▶</span>
+                        </div>
+                    </div>
+                    <div class="telemetry-item">
+                        <span class="telemetry-label">Carro</span>
+                        <span class="telemetry-value" id="tel-carro">0%</span>
+                        <div style="display:flex; justify-content:center; gap:0.25rem; margin-top:0.25rem;">
+                            <span class="telemetry-dir" id="dir-B">◀ IN</span>
+                            <span class="telemetry-dir" id="dir-F">OUT ▶</span>
+                        </div>
+                    </div>
+                    <div class="telemetry-item">
+                        <span class="telemetry-label">Gancho</span>
+                        <span class="telemetry-value" id="tel-gancho">0%</span>
+                        <div style="display:flex; justify-content:center; gap:0.25rem; margin-top:0.25rem;">
+                            <span class="telemetry-dir" id="dir-U">▲ UP</span>
+                            <span class="telemetry-dir" id="dir-D">DN ▼</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <!-- Controls -->
-    <div class="controls-container disabled" id="controls-container">
-        <!-- Control de Carro -->
-        <div class="control-group">
-            <div class="control-title">Carro</div>
-            <div class="linear-controls">
-                <button class="btn command-btn" data-cmd="B">
-                    <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
-                </button>
-                <button class="btn command-btn" data-cmd="F">
-                    <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- Control de Elevación -->
-        <div class="control-group">
-            <div class="control-title">Elevación</div>
-            <div class="linear-controls">
-                <button class="btn command-btn" data-cmd="D">
-                    <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
-                </button>
-                <button class="btn command-btn" data-cmd="U">
-                    <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z"/></svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- Control de Giro -->
-        <div class="control-group">
-            <div class="control-title">Giro</div>
-            <div class="linear-controls">
-                <button class="btn command-btn" data-cmd="L">
-                    <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
-                </button>
-                <button class="btn command-btn" data-cmd="R">
-                    <svg viewBox="0 0 24 24"><path d="M11.5 8c2.65 0 5.05.99 6.9 2.6L22 7v9h-9l3.62-3.62C15.23 11.22 13.46 10.5 11.5 10.5c-3.54 0-6.55 2.31-7.6 5.5l-2.37-.78C2.92 11.03 6.85 8 11.5 8z"/></svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- Parada de Emergencia -->
-        <button class="btn btn-stop command-btn" data-cmd="S">PARADA / STOP</button>
-    </div>
-
-    <p class="disabled-notice visible" id="disabled-notice">
-        ⚠ Activa el modo WEB para controlar desde aquí
-    </p>
 
     <div class="footer-spacer"></div>
 
@@ -355,12 +564,53 @@
         let currentInterval = null;
         let isWebMode = false;
         const SEND_INTERVAL_MS = 100;
-        const MODE_POLL_MS = 2000;
+        const STATUS_POLL_MS = 150; // Polling rápido para telemetría
 
         const modeToggle = document.getElementById('mode-toggle');
         const modeText = document.getElementById('mode-text');
         const controlsContainer = document.getElementById('controls-container');
         const disabledNotice = document.getElementById('disabled-notice');
+        const statusDot = document.querySelector('.status-dot');
+        const statusSpan = document.querySelector('.status span');
+
+        // ---- Telemetry Targets (del backend) ----
+        let targetMode = 'MANUAL';
+        let targetCarro = 'S';
+        let targetElev = 'S';
+        let targetGiro = 'S';
+
+        // ---- Physics Simulation (local 2.5D visualizer) ----
+        let angle = 0.5; // Ángulo inicial en radianes (~30°)
+        let carriageDist = 50; // Distancia inicial (15px a 95px)
+        let hookDepth = 60; // Altura del gancho (15px a 120px)
+
+        const JIB_LENGTH = 100;
+        const COUNTER_JIB_LENGTH = 40;
+        const TOWER_X = 160;
+        const TOWER_Y = 80;
+
+        // SVG Elements
+        const jibLine = document.getElementById('jib-line');
+        const counterJibLine = document.getElementById('counter-jib-line');
+        const tieJib = document.getElementById('tie-jib');
+        const tieCounter = document.getElementById('tie-counter');
+        const counterweight = document.getElementById('counterweight');
+        const cabin = document.getElementById('cabin');
+        const trolley = document.getElementById('trolley');
+        const hoistCable = document.getElementById('hoist-cable');
+        const hookGroup = document.getElementById('hook-group');
+
+        // UI Telemetry Elements
+        const telGiro = document.getElementById('tel-giro');
+        const telCarro = document.getElementById('tel-carro');
+        const telGancho = document.getElementById('tel-gancho');
+
+        const dirL = document.getElementById('dir-L');
+        const dirR = document.getElementById('dir-R');
+        const dirF = document.getElementById('dir-F');
+        const dirB = document.getElementById('dir-B');
+        const dirU = document.getElementById('dir-U');
+        const dirD = document.getElementById('dir-D');
 
         // ---- Mode Management ----
         const updateModeUI = (webMode) => {
@@ -375,7 +625,6 @@
             } else {
                 controlsContainer.classList.add('disabled');
                 disabledNotice.classList.add('visible');
-                // Stop any active commands when switching to manual
                 if (currentInterval) {
                     clearInterval(currentInterval);
                     currentInterval = null;
@@ -387,27 +636,143 @@
         modeToggle.addEventListener('change', async () => {
             try {
                 await fetch('/cmd?action=M');
-                // Don't update UI immediately — wait for polling to confirm
+                setTimeout(pollStatus, 80); // Consultar rápidamente para reflejar cambio
             } catch (error) {
                 console.error('Error cambiando modo:', error);
             }
         });
 
-        // Poll mode status from ESP32
-        const pollMode = async () => {
+        // Poll telemetry & mode status from ESP32
+        const pollStatus = async () => {
             try {
-                const response = await fetch('/mode');
-                const mode = await response.text();
-                updateModeUI(mode.trim() === 'WEB');
+                const response = await fetch('/status');
+                const text = await response.text();
+                
+                // Formato de telemetría esperado: MODO,CARRO,ELEV,GIRO
+                const parts = text.trim().split(',');
+                if (parts.length === 4) {
+                    targetMode = parts[0];
+                    targetCarro = parts[1];
+                    targetElev = parts[2];
+                    targetGiro = parts[3];
+                    
+                    updateModeUI(targetMode === 'WEB');
+                    
+                    // Conexión exitosa
+                    statusDot.style.backgroundColor = '#10b981';
+                    statusDot.style.boxShadow = '0 0 10px #10b981';
+                    statusSpan.textContent = 'Sistema Online';
+                }
             } catch (error) {
-                console.error('Error consultando modo:', error);
+                console.error('Error consultando telemetria:', error);
+                // Conexión fallida / offline
+                statusDot.style.backgroundColor = '#ef4444';
+                statusDot.style.boxShadow = '0 0 10px #ef4444';
+                statusSpan.textContent = 'Sistema Offline';
             }
         };
 
         // Start polling
-        setInterval(pollMode, MODE_POLL_MS);
-        // Initial poll
-        pollMode();
+        setInterval(pollStatus, STATUS_POLL_MS);
+        pollStatus();
+
+        // ---- Physics & SVG Animation Loop (60 FPS) ----
+        const updatePhysics = () => {
+            // 1. Incrementar / Decrementar valores simulados basados en la telemetría activa
+            if (targetGiro === 'R') angle += 0.015;
+            else if (targetGiro === 'L') angle -= 0.015;
+
+            if (targetCarro === 'F') carriageDist += 0.7;
+            else if (targetCarro === 'B') carriageDist -= 0.7;
+
+            if (targetElev === 'U') hookDepth -= 1.0;
+            else if (targetElev === 'D') hookDepth += 1.0;
+
+            // 2. Límites físicos de la grúa
+            if (carriageDist < 15) carriageDist = 15;
+            if (carriageDist > 95) carriageDist = 95;
+
+            if (hookDepth < 15) hookDepth = 15;
+            if (hookDepth > 120) hookDepth = 120;
+
+            // Mantener ángulo entre 0 y 2pi
+            if (angle < 0) angle += Math.PI * 2;
+            if (angle > Math.PI * 2) angle -= Math.PI * 2;
+
+            // 3. Trigonometría de la pluma isométrica (achatamiento de perspectiva Y = 0.5)
+            const cosA = Math.cos(angle);
+            const sinA = Math.sin(angle) * 0.5;
+
+            // Coordenadas calculadas
+            const jibEndX = TOWER_X + cosA * JIB_LENGTH;
+            const jibEndY = TOWER_Y + sinA * JIB_LENGTH;
+
+            const counterEndX = TOWER_X - cosA * COUNTER_JIB_LENGTH;
+            const counterEndY = TOWER_Y - sinA * COUNTER_JIB_LENGTH;
+
+            const tieJibX = TOWER_X + cosA * JIB_LENGTH * 0.6;
+            const tieJibY = TOWER_Y + sinA * JIB_LENGTH * 0.6;
+
+            const carriageX = TOWER_X + cosA * carriageDist;
+            const carriageY = TOWER_Y + sinA * carriageDist;
+
+            // 4. Actualizar Atributos SVG
+            jibLine.setAttribute('x1', TOWER_X);
+            jibLine.setAttribute('y1', TOWER_Y);
+            jibLine.setAttribute('x2', jibEndX);
+            jibLine.setAttribute('y2', jibEndY);
+
+            counterJibLine.setAttribute('x1', TOWER_X);
+            counterJibLine.setAttribute('y1', TOWER_Y);
+            counterJibLine.setAttribute('x2', counterEndX);
+            counterJibLine.setAttribute('y2', counterEndY);
+
+            tieJib.setAttribute('x2', tieJibX);
+            tieJib.setAttribute('y2', tieJibY);
+
+            tieCounter.setAttribute('x2', counterEndX);
+            tieCounter.setAttribute('y2', counterEndY);
+
+            counterweight.setAttribute('transform', `translate(${counterEndX}, ${counterEndY})`);
+            cabin.setAttribute('transform', `translate(${TOWER_X}, ${TOWER_Y}) rotate(${angle * 180 / Math.PI})`);
+            trolley.setAttribute('transform', `translate(${carriageX}, ${carriageY}) rotate(${angle * 180 / Math.PI})`);
+
+            // Cable vertical
+            hoistCable.setAttribute('x1', carriageX);
+            hoistCable.setAttribute('y1', carriageY);
+            hoistCable.setAttribute('x2', carriageX);
+            hoistCable.setAttribute('y2', carriageY + hookDepth);
+
+            // Gancho
+            hookGroup.setAttribute('transform', `translate(${carriageX}, ${carriageY + hookDepth})`);
+
+            // 5. Actualizar interfaz de telemetría numérica
+            const angleDeg = Math.round(angle * 180 / Math.PI) % 360;
+            const carriagePct = Math.round(((carriageDist - 15) / 80) * 100);
+            const hookPct = Math.round(((120 - hookDepth) / 105) * 100);
+
+            telGiro.textContent = `${angleDeg}°`;
+            telCarro.textContent = `${carriagePct}%`;
+            telGancho.textContent = `${hookPct}%`;
+
+            // 6. Resaltar indicadores de dirección activos
+            updateDirIndicator(dirL, targetGiro === 'L');
+            updateDirIndicator(dirR, targetGiro === 'R');
+            updateDirIndicator(dirF, targetCarro === 'F');
+            updateDirIndicator(dirB, targetCarro === 'B');
+            updateDirIndicator(dirU, targetElev === 'U');
+            updateDirIndicator(dirD, targetElev === 'D');
+
+            requestAnimationFrame(updatePhysics);
+        };
+
+        const updateDirIndicator = (element, active) => {
+            if (active) element.classList.add('active');
+            else element.classList.remove('active');
+        };
+
+        // Iniciar loop visual
+        requestAnimationFrame(updatePhysics);
 
         // ---- Command Management ----
         const sendCommand = async (cmd) => {

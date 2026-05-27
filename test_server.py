@@ -8,10 +8,13 @@ PORT = 8080
 
 # Variable global simulada de modo
 modo_web_simulado = False
+carro_simulado = "S"
+elev_simulado = "S"
+giro_simulado = "S"
 
 class MockHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
-        global modo_web_simulado
+        global modo_web_simulado, carro_simulado, elev_simulado, giro_simulado
         parsed_path = urlparse(self.path)
         
         if parsed_path.path.startswith('/cmd'):
@@ -21,7 +24,26 @@ class MockHandler(http.server.SimpleHTTPRequestHandler):
             
             if action == 'M':
                 modo_web_simulado = not modo_web_simulado
+                carro_simulado = "S"
+                elev_simulado = "S"
+                giro_simulado = "S"
                 print(f"      [Modo Simulado] Cambiado a: {'WEB' if modo_web_simulado else 'MANUAL'}")
+            elif action == 'F':
+                carro_simulado = "F"
+            elif action == 'B':
+                carro_simulado = "B"
+            elif action == 'U':
+                elev_simulado = "U"
+            elif action == 'D':
+                elev_simulado = "D"
+            elif action == 'L':
+                giro_simulado = "L"
+            elif action == 'R':
+                giro_simulado = "R"
+            elif action == 'S':
+                carro_simulado = "S"
+                elev_simulado = "S"
+                giro_simulado = "S"
                 
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
@@ -36,6 +58,15 @@ class MockHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(mode_str.encode('utf-8'))
+            
+        elif parsed_path.path == '/status':
+            mode_str = "WEB" if modo_web_simulado else "MANUAL"
+            status_str = f"{mode_str},{carro_simulado},{elev_simulado},{giro_simulado}"
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(status_str.encode('utf-8'))
             
         else:
             # Sirve index.html y otros archivos de la carpeta
