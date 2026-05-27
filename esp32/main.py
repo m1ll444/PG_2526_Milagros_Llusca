@@ -2,8 +2,11 @@ import uasyncio as asyncio
 import machine
 import os
 
-# Configuración de UART (Pines TX=17, RX=16 - usando solo TX)
+# Configuración de UART (Pines TX=17, RX=16)
 uart = machine.UART(2, baudrate=9600, tx=17, rx=16)
+
+# Variable global de modo de control
+current_mode = 'MANUAL'
 
 def leer_html():
     try:
@@ -15,7 +18,24 @@ def leer_html():
 
 html_content = leer_html()
 
+async def leer_uart_modo():
+    """Tarea asíncrona para leer estado de modo desde Arduino."""
+    global current_mode
+    while True:
+        if uart.any():
+            data = uart.read(1)
+            if data:
+                char = data.decode('utf-8', 'ignore')
+                if char == 'W':
+                    current_mode = 'WEB'
+                    print(f"Modo actualizado: {current_mode}")
+                elif char == 'J':
+                    current_mode = 'MANUAL'
+                    print(f"Modo actualizado: {current_mode}")
+        await asyncio.sleep_ms(50)
+
 async def handle_client(reader, writer):
+    global current_mode
     try:
         request_line = await reader.readline()
         if not request_line:
@@ -56,11 +76,17 @@ async def handle_client(reader, writer):
                     print(f"Enviando comando UART: {cmd_param}")
                     uart.write(cmd_param)
                     
-                    response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nOK"
+                    response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\nOK"
                 else:
                     response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\nMissing action"
                     
                 await writer.awrite(response)
+            
+            # Endpoint para consultar modo actual
+            elif path == '/mode':
+                response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\n" + current_mode
+                await writer.awrite(response)
+                
             else:
                 response = "HTTP/1.1 404 Not Found\r\n\r\n"
                 await writer.awrite(response)
@@ -74,6 +100,10 @@ async def main():
     print("Iniciando servidor web...")
     server = await asyncio.start_server(handle_client, '0.0.0.0', 80)
     print("Servidor web corriendo en el puerto 80.")
+    
+    # Iniciar tarea de lectura UART para modo
+    asyncio.create_task(leer_uart_modo())
+    print("Lectura UART de modo activa.")
     
     while True:
         await asyncio.sleep(1)

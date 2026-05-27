@@ -14,39 +14,39 @@ Sistema integral de control remoto para una grúa torre con componentes IoT. Per
 ## 🎯 Características Principales
 
 ### Control de Movimientos
-- **Carro**: Movimiento horizontal izquierda/derecha (Motor DC N20)
-- **Elevación**: Movimiento vertical arriba/abajo (Motor DC N20)
-- **Giro**: Rotación continua (Motor Stepper NEMA 17)
+- **Carro**: Movimiento horizontal adelante/atrás (Motor DC N20 con reductora 12V)
+- **Elevación**: Movimiento vertical subir/bajar (Motor DC N20 con reductora 12V)
+- **Giro**: Rotación horaria/antihoraria (Motoreductor DC 30RPM 12V)
 
-### Interfaz de Usuario
-- Panel de control moderno con gradientes y efectos glassmorphism
-- Joystick virtual para control intuitivo
-- Indicador de estado en tiempo real
-- Diseño responsive adaptable a móviles
+### Interfaz de Usuario e Interacción
+- Panel de control moderno con gradientes y efectos glassmorphism.
+- Switch toggle para control dual (Web / Manual) que inhabilita los controles web en modo manual.
+- Indicador visual del modo de control activo y sincronización en tiempo real vía polling (2s).
+- Botones táctiles grandes y responsivos para control remoto.
+- Botón de parada de emergencia prominente.
 
 ### Comunicación
-- Protocolo HTTP/REST entre ESP32 y cliente web
-- Comunicación UART entre ESP32 y Arduino
-- Control por comandos simples (F, B, L, R, U, D, CW, CCW)
+- Protocolo HTTP/REST expuesto por el ESP32.
+- Comunicación serie UART bidireccional entre ESP32 (GPIO 17/16) y Arduino (D0/D1).
+- Transmisión serie de comandos simples de movimiento y estado de modo (`F`, `B`, `U`, `D`, `L`, `R`, `S`, `M`, `W`, `J`).
 
 ---
 
 ## 🔧 Requisitos Técnicos
 
 ### Hardware
-- **ESP32** (módulo WiFi)
-- **Arduino Uno**
-- **2x Motor DC N20** (12V) con reducción
-- **1x Motor Stepper NEMA 17** (12V, 1.9A)
-- **Driver TB6612FNG** (para motores DC)
-- **Driver DRV8825** (para motor stepper)
-- **2x Joystick analógicos**
-- **Fuente de alimentación 12V**
+- **ESP32 DevKit V1** (módulo WiFi y servidor asíncrono)
+- **Arduino Uno/Nano** (controlador principal de motores y entradas)
+- **2x Motor DC N20** (12V) para carro y elevación
+- **1x Motoreductor DC de 30RPM** (12V) para giro
+- **2x Driver TB6612FNG** (el primero para Carro y Elevación, el segundo para canal de Giro)
+- **3x Joysticks analógicos** (o joystick multieje) con botón pulsador integrado
+- **Fuente de alimentación 12V** (con regulador a 5V para lógica)
 
 ### Software
 - MicroPython (ESP32)
-- Arduino IDE (Arduino Uno)
-- Python 3.x (para servidor de pruebas)
+- Arduino IDE / C++ (Arduino Uno/Nano)
+- Python 3.x (para servidor de pruebas opcional)
 - Navegador web moderno (Chrome, Firefox, Safari, Edge)
 
 ---
@@ -61,9 +61,28 @@ PG_2526_Milagros_Llusca/
 │   └── index.html        # Interfaz web
 ├── grua_arduino/          # Código del Arduino
 │   └── grua_arduino.ino  # Control de motores
+├── openspec/              # Especificaciones basadas en comportamiento
+│   ├── config.yaml       # Configuración de OpenSpec
+│   └── specs/            # Especificaciones de capacidades
 ├── test_server.py         # Servidor de pruebas (simulación)
 └── README.md             # Este archivo
 ```
+
+---
+
+## 📖 Especificaciones del Sistema (OpenSpec) y Esquemas
+
+Este proyecto adopta **OpenSpec** para documentar formalmente los requerimientos y comportamientos esperados del sistema mediante especificaciones ejecutables basadas en escenarios:
+
+*   [Comunicación UART](openspec/specs/comunicacion-uart/spec.md): Protocolo serie y comandos de control bidireccionales entre ESP32 y Arduino.
+*   [Servidor Web](openspec/specs/servidor-web/spec.md): Interfaz web en MicroPython, polling y endpoints HTTP.
+*   [Control de Motores](openspec/specs/control-motores/spec.md): Control de hardware para los 3 motores DC y límites de velocidad.
+*   [Lógica de Prioridad y Seguridad](openspec/specs/control-prioridad-seguridad/spec.md): Exclusividad de los modos y temporización de seguridad.
+*   [Modo de Control Dual](openspec/specs/modo-control-dual/spec.md): Conmutación e intercambio de señales de sincronización.
+*   [Esquema de Conexiones](openspec/specs/schema-conexiones/spec.md): Especificación del esquema de hardware interactivo.
+
+Adicionalmente, puedes consultar el documento autocontenido de conexiones de hardware:
+*   [Esquema Electrónico Interactivo (Schema.html)](Schema.html): Contiene el diagrama de bloques SVG y la tabla pin-a-pin interactiva.
 
 ---
 
@@ -86,33 +105,28 @@ PG_2526_Milagros_Llusca/
 ```
 
 #### 3. Conexiones de Hardware
-
-**Arduino - Motors:**
-- Pin 2, 4, 3: Motor Carro (TB6612FNG)
-- Pin 7, 8, 5: Motor Elevación (TB6612FNG)
-- Pin 9, 10: Motor Giro (DRV8825)
-
-**Arduino - Joysticks:**
-- A0: Joystick X (Carro)
-- A1: Joystick Y (Elevación)
-- A2: Joystick Z (Giro)
+Para ver todas las conexiones de pines y la topología física detallada, consulta el archivo [Schema.html](Schema.html) o el especificado de conexiones.
+Resumen de conexiones clave (Arduino):
+- **Motor Carro (TB6612FNG #1)**: AIN1 (D2), AIN2 (D4), PWMA (D3)
+- **Motor Elevación (TB6612FNG #1)**: BIN1 (D7), BIN2 (D8), PWMB (D5)
+- **Motor Giro (TB6612FNG #2)**: CIN1 (D11), CIN2 (D12), PWMC (D9)
+- **Joysticks**: X (Carro) -> A0, Y (Elevación) -> A1, Z (Giro) -> A2
+- **Botón de Modo (Pulsador)**: D6
 
 ### Usar la Interfaz Web
 
 1. **Conectarse a la Red WiFi:**
-   - El ESP32 crea una red WiFi o se conecta a una existente
-   - Abrir navegador y acceder a `http://<IP_ESP32>:8080`
+   - El ESP32 crea una red WiFi o se conecta a una de ellas.
+   - Abrir el navegador y acceder a `http://<IP_ESP32>` (puerto 80).
 
 2. **Controlar la Grúa:**
-   - Usar los botones direccionales o joystick virtual
-   - **Arriba/Abajo**: Elevar/Bajar
-   - **Izquierda/Derecha**: Mover carro
-   - **CW/CCW**: Girar en sentido horario/antihorario
-   - **STOP**: Detener todos los movimientos
+   - Activar el switch **WEB** en la parte superior para habilitar el control remoto. En modo **MANUAL**, los controles web estarán deshabilitados.
+   - Mantener pulsado el botón de la dirección deseada para mover la grúa, y soltarlo para detenerla.
+   - Presionar **PARADA / STOP** para una detención total inmediata.
 
 3. **Indicadores:**
-   - Punto verde indica conexión activa
-   - Latencia visible en tiempo real
+   - El punto verde indica "Sistema Online".
+   - El indicador muestra en tiempo real el modo activo (`WEB` o `MANUAL`) y se actualiza mediante consulta (polling cada 2s) y confirmaciones UART asíncronas.
 
 ### Modo de Prueba
 
@@ -127,42 +141,49 @@ python test_server.py
 ## ⚙️ Configuración Avanzada
 
 ### Parámetros del ESP32 (`main.py`)
-- `BAUDRATE`: 9600 (velocidad UART con Arduino)
-- `PUERTO`: 8080 (puerto web)
+- **Baudrate UART**: 9600 bps (TX=17, RX=16)
+- **Puerto**: 80 (servidor web HTTP)
 
 ### Parámetros del Arduino (`grua_arduino.ino`)
-- `DEADBAND_LOW/HIGH`: 400/600 (zona muerta del joystick)
-- `WEB_TIMEOUT_MS`: 500 (timeout para comandos web)
-- `MAX_SPEED`: 1000 pasos/seg (motor stepper)
-
-### Velocidades de Motores
-Modificables en el código Arduino en `MOTOR_SPEED_*` constantes
+- **Constantes de Velocidad Máxima (PWM 0-255)**:
+  - `MAX_SPEED_CARRO`: 255
+  - `MAX_SPEED_ELEVACION`: 255
+  - `MAX_SPEED_GIRO`: 200
+- **Zona Muerta del Joystick**: `DEADBAND_LOW = 400`, `DEADBAND_HIGH = 600`
+- **Timeout Web**: `500` ms (solo activo en modo Web)
+- **Debounce de Botón**: `50` ms
 
 ---
 
-## 📡 API de Comandos
+## 📡 API de Comandos del ESP32
 
-### Endpoint
+### Endpoint de Envío de Comando
 ```
 GET /cmd?action=<COMMAND>
 ```
+Retorna `"OK"` en caso de éxito.
 
-### Comandos Disponibles
-| Comando | Descripción |
+### Comandos de Movimiento y Control
+| Comando | Acción en Arduino |
 |---------|-----------|
-| `F` | Carro Adelante |
-| `B` | Carro Atrás |
-| `L` | Mover Izquierda |
-| `R` | Mover Derecha |
-| `U` | Elevar |
-| `D` | Bajar |
-| `CW` | Girar Horario |
-| `CCW` | Girar Antihorario |
-| `S` | Stop/Detener |
+| `F` | Mover Carro Adelante |
+| `B` | Mover Carro Atrás |
+| `U` | Subir Elevación (Gancho) |
+| `D` | Bajar Elevación (Gancho) |
+| `L` | Mover Giro Izquierda (Antihorario) |
+| `R` | Mover Giro Derecha (Horario) |
+| `S` | Detener todos los motores (Stop) |
+| `M` | Alternar modo de control (Web <-> Manual) |
+
+### Endpoint de Consulta de Modo
+```
+GET /mode
+```
+Retorna `"WEB"` o `"MANUAL"` según el estado sincronizado en el ESP32.
 
 ### Ejemplo
 ```
-http://192.168.1.100:8080/cmd?action=U
+http://<IP_ESP32>/cmd?action=U
 ```
 
 ---

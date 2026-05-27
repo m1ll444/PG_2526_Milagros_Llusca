@@ -12,8 +12,10 @@
             --primary-hover: #2563eb;
             --danger-color: #ef4444;
             --danger-hover: #dc2626;
+            --success-color: #10b981;
             --text-color: #f8fafc;
             --text-muted: #94a3b8;
+            --disabled-opacity: 0.35;
         }
 
         body {
@@ -27,14 +29,15 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            touch-action: none; /* Prevent scrolling while using joystick */
+            touch-action: none;
             background-image: 
                 radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(239, 68, 68, 0.1) 0px, transparent 50%);
         }
 
         h1 {
-            margin-top: 2rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
             font-size: 1.75rem;
             font-weight: 700;
             letter-spacing: -0.025em;
@@ -47,7 +50,7 @@
         .status {
             font-size: 0.875rem;
             color: var(--text-muted);
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -61,14 +64,119 @@
             box-shadow: 0 0 10px #10b981;
         }
 
+        /* ============ MODE SWITCH ============ */
+        .mode-container {
+            background: var(--surface-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .mode-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .mode-indicator {
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            margin-left: auto;
+        }
+
+        .mode-indicator.manual {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .mode-indicator.web {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(239, 68, 68, 0.3);
+            transition: 0.3s;
+            border-radius: 28px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #f8fafc;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        input:checked + .slider {
+            background-color: rgba(16, 185, 129, 0.4);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* ============ CONTROLS ============ */
         .controls-container {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 2rem;
+            gap: 1.5rem;
             width: 100%;
             max-width: 400px;
             padding: 0 1.5rem;
             box-sizing: border-box;
+            transition: opacity 0.3s ease, filter 0.3s ease;
+        }
+
+        .controls-container.disabled {
+            opacity: var(--disabled-opacity);
+            pointer-events: none;
+            filter: grayscale(0.5);
         }
 
         .control-group {
@@ -93,14 +201,6 @@
             font-weight: 600;
         }
 
-        .d-pad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
-            width: 100%;
-            max-width: 200px;
-        }
-
         .btn {
             background-color: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -123,39 +223,6 @@
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
         }
 
-        .btn-up { grid-column: 2; grid-row: 1; }
-        .btn-left { grid-column: 1; grid-row: 2; }
-        .btn-right { grid-column: 3; grid-row: 2; }
-        .btn-down { grid-column: 2; grid-row: 3; }
-
-        .btn-center {
-            grid-column: 2;
-            grid-row: 2;
-            background-color: transparent;
-            border: none;
-            pointer-events: none;
-        }
-
-        .btn-stop {
-            background-color: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.3);
-            color: var(--danger-color);
-            width: 100%;
-            margin-top: 1rem;
-            font-size: 1rem;
-            font-weight: 600;
-            padding: 1rem;
-            border-radius: 1rem;
-            letter-spacing: 0.05em;
-        }
-
-        .btn-stop:active {
-            background-color: var(--danger-color);
-            color: white;
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
-        }
-
-        /* Elevación y Giro controls (Linear layout) */
         .linear-controls {
             display: flex;
             gap: 1rem;
@@ -168,10 +235,49 @@
             height: 4rem;
         }
 
+        .btn-stop {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: var(--danger-color);
+            width: 100%;
+            max-width: 400px;
+            margin-top: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 1rem;
+            border-radius: 1rem;
+            letter-spacing: 0.05em;
+            box-sizing: border-box;
+        }
+
+        .btn-stop:active {
+            background-color: var(--danger-color);
+            color: white;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+        }
+
         svg {
             width: 24px;
             height: 24px;
             fill: currentColor;
+        }
+
+        .disabled-notice {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 0 1.5rem;
+        }
+
+        .disabled-notice.visible {
+            opacity: 1;
+        }
+
+        .footer-spacer {
+            height: 2rem;
         }
 
     </style>
@@ -184,7 +290,18 @@
         <span>Sistema Online</span>
     </div>
 
-    <div class="controls-container">
+    <!-- Mode Switch -->
+    <div class="mode-container">
+        <span class="mode-label">Modo</span>
+        <label class="switch" id="mode-switch-label">
+            <input type="checkbox" id="mode-toggle">
+            <span class="slider"></span>
+        </label>
+        <span class="mode-indicator manual" id="mode-text">MANUAL</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-container disabled" id="controls-container">
         <!-- Control de Carro -->
         <div class="control-group">
             <div class="control-title">Carro</div>
@@ -211,15 +328,15 @@
             </div>
         </div>
 
-        <!-- Control de Giro (Stepper) -->
+        <!-- Control de Giro -->
         <div class="control-group">
             <div class="control-title">Giro</div>
             <div class="linear-controls">
                 <button class="btn command-btn" data-cmd="L">
-                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" transform="rotate(-90 12 12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
                 </button>
                 <button class="btn command-btn" data-cmd="R">
-                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" transform="rotate(90 12 12)"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M11.5 8c2.65 0 5.05.99 6.9 2.6L22 7v9h-9l3.62-3.62C15.23 11.22 13.46 10.5 11.5 10.5c-3.54 0-6.55 2.31-7.6 5.5l-2.37-.78C2.92 11.03 6.85 8 11.5 8z"/></svg>
                 </button>
             </div>
         </div>
@@ -228,11 +345,73 @@
         <button class="btn btn-stop command-btn" data-cmd="S">PARADA / STOP</button>
     </div>
 
+    <p class="disabled-notice visible" id="disabled-notice">
+        ⚠ Activa el modo WEB para controlar desde aquí
+    </p>
+
+    <div class="footer-spacer"></div>
+
     <script>
         let currentInterval = null;
-        const SEND_INTERVAL_MS = 100; // Enviar comando cada 100ms mientras se mantiene presionado
+        let isWebMode = false;
+        const SEND_INTERVAL_MS = 100;
+        const MODE_POLL_MS = 2000;
 
+        const modeToggle = document.getElementById('mode-toggle');
+        const modeText = document.getElementById('mode-text');
+        const controlsContainer = document.getElementById('controls-container');
+        const disabledNotice = document.getElementById('disabled-notice');
+
+        // ---- Mode Management ----
+        const updateModeUI = (webMode) => {
+            isWebMode = webMode;
+            modeToggle.checked = webMode;
+            modeText.textContent = webMode ? 'WEB' : 'MANUAL';
+            modeText.className = 'mode-indicator ' + (webMode ? 'web' : 'manual');
+
+            if (webMode) {
+                controlsContainer.classList.remove('disabled');
+                disabledNotice.classList.remove('visible');
+            } else {
+                controlsContainer.classList.add('disabled');
+                disabledNotice.classList.add('visible');
+                // Stop any active commands when switching to manual
+                if (currentInterval) {
+                    clearInterval(currentInterval);
+                    currentInterval = null;
+                }
+            }
+        };
+
+        // Toggle switch click
+        modeToggle.addEventListener('change', async () => {
+            try {
+                await fetch('/cmd?action=M');
+                // Don't update UI immediately — wait for polling to confirm
+            } catch (error) {
+                console.error('Error cambiando modo:', error);
+            }
+        });
+
+        // Poll mode status from ESP32
+        const pollMode = async () => {
+            try {
+                const response = await fetch('/mode');
+                const mode = await response.text();
+                updateModeUI(mode.trim() === 'WEB');
+            } catch (error) {
+                console.error('Error consultando modo:', error);
+            }
+        };
+
+        // Start polling
+        setInterval(pollMode, MODE_POLL_MS);
+        // Initial poll
+        pollMode();
+
+        // ---- Command Management ----
         const sendCommand = async (cmd) => {
+            if (!isWebMode && cmd !== 'S') return;
             try {
                 await fetch(`/cmd?action=${cmd}`);
             } catch (error) {
@@ -241,9 +420,10 @@
         };
 
         const startCommand = (cmd, buttonElement) => {
+            if (!isWebMode) return;
             if (currentInterval) clearInterval(currentInterval);
             buttonElement.classList.add('active');
-            sendCommand(cmd); // Enviar inmediatamente
+            sendCommand(cmd);
             currentInterval = setInterval(() => sendCommand(cmd), SEND_INTERVAL_MS);
         };
 
@@ -253,14 +433,13 @@
                 currentInterval = null;
             }
             if (buttonElement) buttonElement.classList.remove('active');
-            sendCommand('S'); // Enviar comando de parada
+            if (isWebMode) sendCommand('S');
         };
 
         // Attach event listeners to all buttons
         document.querySelectorAll('.command-btn').forEach(btn => {
             const cmd = btn.getAttribute('data-cmd');
 
-            // Support both mouse and touch events
             btn.addEventListener('mousedown', (e) => { e.preventDefault(); startCommand(cmd, btn); });
             btn.addEventListener('touchstart', (e) => { e.preventDefault(); startCommand(cmd, btn); });
 
