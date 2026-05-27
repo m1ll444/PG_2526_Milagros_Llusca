@@ -1,4 +1,4 @@
-# Proyecto Grúa Torre: Requerimientos Técnicos para Generación de Código (v3)
+# Proyecto Grúa Torre: Requerimientos Técnicos para Generación de Código (v4)
 
 > [!NOTE]
 > **Adopción de OpenSpec:** Los requerimientos funcionales y técnicos de este documento han sido formalizados en especificaciones de comportamiento ubicadas en `openspec/specs/`. Consulta los enlaces para ver los escenarios detallados de cada capacidad:
@@ -10,7 +10,7 @@
 > - [Esquema de Conexiones Electrónicas](openspec/specs/schema-conexiones/spec.md)
 
 ## Contexto del Proyecto
-Este documento está optimizado para su procesamiento por agentes de IA. El objetivo es detallar el firmware y la interfaz para una grúa torre con control dual exclusivo (Manual vía Joysticks o Remoto vía Web) utilizando comunicación serial bidireccional entre un ESP32 y un Arduino Nano/Uno.
+Este documento está optimizado para su procesamiento por agentes de IA. El objetivo es detallar el firmware y la interfaz para una grúa torre con control dual exclusivo (Manual vía Joysticks o Remoto vía Web) utilizando comunicación directa USB (Web Serial API) con el Arduino y depuración inalámbrica ESP32 (SoftwareSerial a UART).
 
 ---
 
@@ -18,7 +18,7 @@ Este documento está optimizado para su procesamiento por agentes de IA. El obje
 
 ### Controlador A: Arduino Nano/Uno (Actuador Principal)
 - **Framework:** Arduino / C++
-- **Responsabilidad:** Leer joysticks analógicos, controlar los puentes H de los motores DC, gestionar la conmutación de modo (botón físico con debounce) y comunicarse de forma bidireccional vía UART con el ESP32.
+- **Responsabilidad:** Leer joysticks analógicos, controlar los puentes H de los motores DC, gestionar la conmutación de modo (botón físico con debounce), comunicarse bidireccionalmente vía USB Serial con el navegador, y enviar logs de depuración unidireccionales vía SoftwareSerial al ESP32.
 - **Asignación de Pines:**
   - **Joysticks:** X (Carro) -> A0, Y (Elevación) -> A1, Z (Giro) -> A2.
   - **Botón de Modo (Pulsador físico):** Joystick button -> D6 (INPUT_PULLUP).
@@ -29,15 +29,16 @@ Este documento está optimizado para su procesamiento por agentes de IA. El obje
   - **Driver TB6612FNG #2 (Motoreductor DC 30RPM - Giro):**
     - Motor C (Giro): CIN1 (D11), CIN2 (D12), PWMC (D9).
     - STBY -> VCC (5V).
-  - **Comunicación UART:** RX (D0) desde el TX del ESP32, TX (D1) hacia el RX del ESP32.
+  - **Comunicación Principal (USB Serial):** RX (D0) y TX (D1) conectados al puerto USB nativo hacia la PC.
+  - **Canal de Logs (SoftwareSerial):** D10 (RX - libre), D13 (TX - conectado al RX GPIO 16 del ESP32).
 
-### Controlador B: ESP32 DevKit V1 (Interfaz Web)
+### Controlador B: ESP32 DevKit V1 (Monitor Inalámbrico de Logs)
 - **Framework:** MicroPython (uasyncio)
-- **Responsabilidad:** Servidor web asíncrono para index.html, enrutamiento de comandos HTTP hacia UART, recepción asíncrona del estado del modo desde Arduino y exposición del endpoint `/mode`.
+- **Responsabilidad:** Recibir trazas de depuración de Arduino por UART a 9600 bps, almacenarlas en un buffer circular en RAM (últimas 50 líneas) y servir dinámicamente un HTML liviano (<2KB) de terminal retro en el puerto 80 con auto-refresco de 2s.
 - **Asignación de Pines:**
-  - **UART TX:** GPIO 17 (Conectado a RX D0 de Arduino).
-  - **UART RX:** GPIO 16 (Conectado a TX D1 de Arduino).
-  - **LED Status:** GPIO 2 (Activo según el estado de la comunicación).
+  - **UART RX:** GPIO 16 (Conectado a TX SoftwareSerial D13 de Arduino).
+  - **LED Status:** GPIO 2 (Parpadea con la actividad del servidor).
+
 
 ---
 
@@ -45,36 +46,34 @@ Este documento está optimizado para su procesamiento por agentes de IA. El obje
 
 ### Tarea 1: Firmware Arduino (grua_arduino.ino)
 - **Modo de Control Exclusivo:** Variable `modoWeb` que conmuta entre `true` (Web) y `false` (Manual/Joystick). Al alternar el modo, se deben detener todos los motores inmediatamente por seguridad.
-- **Debounce y Botón Físico:** Leer el pin D6 (botón del joystick) con un filtro anti-rebote de 50 ms. Al presionarlo, alternar `modoWeb` y enviar `W` o `J` por serial.
-- **Protocolo Serial Bidireccional:**
-  - Recibe comandos web de movimiento (`F`, `B`, `U`, `D`, `L`, `R`, `S`) y de alternancia de modo (`M`).
-  - Envía la confirmación del modo activo (`W` para Web, `J` para Manual) inmediatamente al conmutar.
+- **Debounce y Botón Físico:** Leer el pin D6 (botón del joystick) con un filtro anti-rebote de 50 ms. Al presionarlo, alternar `modoWeb` y enviar `W` o `J` por Serial USB y registrar el evento por SoftwareSerial.
+- **Protocolo Serial Directo (USB):**
+  - Recibe comandos web de movimiento (`F`, `B`, `U`, `D`, `L`, `R`, `S`) y de alternancia de modo (`M`) sobre Serial USB.
+  - Envía la confirmación del modo activo (`W` para Web, `J` para Manual) inmediatamente al conmutar y telemetría periódica (`S:<modo>,<carro>,<elev>,<giro>\n`) cada 100ms.
+- **Canal de Logs (SoftwareSerial D10/D13):**
+  - Transmitir logs con etiquetas estructuradas (`[BOOT]`, `[MODE]`, `[CMD]`, `[MOT]`, `[SAFE]`) hacia el ESP32 para monitorización remota.
 - **Velocidades Máximas Configurables:**
-  - Constantes editables `MAX_SPEED_CARRO` (255), `MAX_SPEED_ELEVACION` (255), y `MAX_SPEED_GIRO` (200) para acotar la velocidad máxima del PWM.
-  - Mapear las entradas de joystick analógicas (`0 - DEADBAND_LOW` y `DEADBAND_HIGH - 1023`) proporcionalmente hacia `0` y su respectiva constante de velocidad máxima.
-- **Timeout de Seguridad:** Si no se recibe ningún comando en modo Web en 500 ms, detener todos los motores. Desactivar este timeout al estar en modo Manual.
+  - Constantes editables `MAX_SPEED_CARRO` (255), `MAX_SPEED_ELEVACION` (255), y `MAX_SPEED_GIRO` (200).
+- **Timeout de Seguridad:** Si no se recibe ningún comando en modo Web en 500 ms, detener todos los motores y loguear `[SAFE] Timeout web`.
 
 ### Tarea 2: Firmware ESP32 (main.py)
-- **Servidor Web Asíncrono:** Servir el archivo `index.html` en el puerto 80.
-- **API y Enrutamiento UART:**
-  - Endpoint `/cmd?action=<COMMAND>`: Envía el carácter del comando recibido (como `F`, `B`, `S` o `M`) al Arduino a través de UART.
-  - Endpoint `/mode`: Retorna el modo activo actual (`WEB` o `MANUAL`) en texto plano.
-- **Lectura de UART Asíncrona:** Hilo/tarea asíncrona para leer bytes desde el Arduino. Si recibe `W` actualizar `current_mode = 'WEB'`, y si recibe `J` actualizar `current_mode = 'MANUAL'`.
+- **Terminal Inalámbrica de Logs:** Servir una página HTML dinámica en el puerto 80.
+- **Buffer Circular en RAM:** Mantener las últimas 50 líneas de log recibidas del Arduino por su UART (GPIO 16) a 9600 bps.
+- **Diseño del Terminal:** Estilo visual retro de consola (fondo negro, texto verde monoespacio, auto-refresco HTTP de 2s, tamaño <2KB).
 
-### Tarea 3: Interfaz Web (index.html)
-- **Switch Toggle de Modo:** Un switch estilizado de tema glassmorphism para alternar el modo. Al accionarlo envía `/cmd?action=M`.
-- **Polling de Estado:** Consultar `/mode` cada 2 segundos para sincronizar el estado visual del switch con el estado real del Arduino.
-- **Deshabilitación de Controles:** Si el modo es `MANUAL`, deshabilitar visualmente y funcionalmente todos los botones de movimiento (opacidad reducida, bloqueo de clics) e informar del estado al usuario.
-- **Estética:** Mantener el tema oscuro (`#0f172a`), bordes translúcidos con desenfoque de fondo y transiciones suaves de color.
+### Tarea 3: Interfaz Web de Control (web_server/index.html)
+- **Conexión Directa USB:** Botón interactivo para iniciar/detener la conexión mediante **Web Serial API** a 9600 bps.
+- **Procesamiento de Telemetría:** Leer asíncronamente las tramas de telemetría USB y actualizar el simulador 2.5D, los indicadores de dirección de motores y los medidores/barras de posición en tiempo real.
+- **Fallback HTTP:** Si no hay puerto USB conectado o no es soportado, usar peticiones `fetch` contra la API del ESP32 como respaldo.
+- **Barra de Navegación Cruzada:** Enlace "Esquema" integrado en el header hacia `schema.html`.
 
-### Tarea 4: Esquema de Conexiones (Schema.html)
-- Documento autoventilado y responsivo en la raíz del proyecto.
-- Diagrama de bloques en SVG inline que detalla la conexión de alimentación de 12V y 5V, los dos microcontroladores, los dos puentes H, los 3 motores DC y los joysticks.
-- Tabla interactiva con motor de filtrado por texto en JS para buscar conexiones (origen, pin, destino, pin, tipo y observaciones).
+### Tarea 4: Esquema de Conexiones (web_server/schema.html)
+- Diagrama interactivo SVG y tabla pin-a-pin con filtro dinámico JS, actualizado con el nuevo pin de SoftwareSerial (D13) de logs hacia el ESP32 (GPIO 16) y barra de navegación hacia `index.html`.
 
 ---
 
 ## 3. Consideraciones Técnicas y de Seguridad
-- **Baudrate:** Configurar ambos controladores a 9600 bps.
-- **Exclusividad del Canal:** En modo Web, ignorar por completo las lecturas físicas del joystick para evitar movimientos indeseados. En modo Manual, ignorar comandos web de movimiento.
+- **Baudrate:** Configurar todos los puertos serie (Serial USB, SoftwareSerial, UART ESP32) a 9600 bps.
+- **Estabilidad de Memoria:** El ESP32 no procesa archivos pesados ni sirve la página de control, evitando bloqueos por OutOfMemory.
+- **Aislamiento de Entradas:** En modo Web se ignoran joysticks físicos, y en modo Manual se ignoran comandos web.
 

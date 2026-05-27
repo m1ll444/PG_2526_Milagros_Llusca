@@ -3,6 +3,12 @@
 // Control de 3 motores DC con modo dual (Web / Manual)
 // ============================================================
 
+#include <SoftwareSerial.h>
+const int RX_SOFT_PIN = 10; // RX no usado
+const int TX_SOFT_PIN = 13; // TX conectado al ESP32 (GPIO16 RX)
+SoftwareSerial debugSerial(RX_SOFT_PIN, TX_SOFT_PIN);
+
+
 // ---- Velocidades Máximas Configurables (PWM 0-255) ----
 const int MAX_SPEED_CARRO = 255;
 const int MAX_SPEED_ELEVACION = 255;
@@ -50,8 +56,19 @@ bool lastButtonState = HIGH;         // Pull-up: reposo = HIGH
 bool buttonState = HIGH;
 unsigned long lastDebounceTime = 0;
 
+// ---- Variables para evitar inundación de logs de motores ----
+int lastSpeedCarro = 0;
+int lastSpeedElev = 0;
+int lastSpeedGiro = 0;
+bool lastDirCarro = false;
+bool lastDirElev = false;
+bool lastDirGiro = false;
+
+
 void setup() {
   Serial.begin(9600);
+  debugSerial.begin(9600);
+  debugSerial.println("[BOOT] Sistema iniciado");
 
   // Configuración de Pines Motores DC (TB6612FNG #1)
   pinMode(AIN1_PIN, OUTPUT);
@@ -148,6 +165,7 @@ void leerComandoWeb() {
     if (cmd == 'M') {
       modoWeb = !modoWeb;
       Serial.write(modoWeb ? 'W' : 'J');
+      debugSerial.println(modoWeb ? "[MODE] Cambiado a WEB" : "[MODE] Cambiado a MANUAL");
       // Al cambiar de modo, detener todos los motores por seguridad
       webCommand = 'S';
       detenerCarro();
@@ -161,12 +179,17 @@ void leerComandoWeb() {
         cmd == 'L' || cmd == 'R' || cmd == 'S') {
       webCommand = cmd;
       lastWebCommandTime = millis();
+      debugSerial.print("[CMD] Recibido: ");
+      debugSerial.println(cmd);
     }
   }
 
   // Verificar Timeout Web (solo en modo web)
   if (modoWeb && (millis() - lastWebCommandTime > WEB_TIMEOUT_MS)) {
-    webCommand = 'S';
+    if (webCommand != 'S') {
+      webCommand = 'S';
+      debugSerial.println("[SAFE] Timeout web - motores detenidos");
+    }
   }
 }
 
@@ -188,6 +211,7 @@ void leerBotonModo() {
       if (buttonState == LOW) {
         modoWeb = !modoWeb;
         Serial.write(modoWeb ? 'W' : 'J');
+        debugSerial.println(modoWeb ? "[MODE] Cambiado a WEB" : "[MODE] Cambiado a MANUAL");
         // Al cambiar de modo, detener todos los motores por seguridad
         webCommand = 'S';
         detenerCarro();
@@ -224,12 +248,25 @@ void controlarCarro(int joyVal) {
 }
 
 void moverCarro(bool adelante, int velocidad) {
+  if (velocidad != lastSpeedCarro || adelante != lastDirCarro) {
+    debugSerial.print("[MOT] Carro: ");
+    debugSerial.print(adelante ? "Adelante" : "Atras");
+    debugSerial.print(" (PWM=");
+    debugSerial.print(velocidad);
+    debugSerial.println(")");
+    lastSpeedCarro = velocidad;
+    lastDirCarro = adelante;
+  }
   digitalWrite(AIN1_PIN, adelante ? HIGH : LOW);
   digitalWrite(AIN2_PIN, adelante ? LOW : HIGH);
   analogWrite(PWMA_PIN, velocidad);
 }
 
 void detenerCarro() {
+  if (lastSpeedCarro != 0) {
+    debugSerial.println("[MOT] Carro: Detenido");
+    lastSpeedCarro = 0;
+  }
   digitalWrite(AIN1_PIN, LOW);
   digitalWrite(AIN2_PIN, LOW);
   analogWrite(PWMA_PIN, 0);
@@ -259,12 +296,25 @@ void controlarElevacion(int joyVal) {
 }
 
 void moverElevacion(bool subir, int velocidad) {
+  if (velocidad != lastSpeedElev || subir != lastDirElev) {
+    debugSerial.print("[MOT] Elevacion: ");
+    debugSerial.print(subir ? "Subir" : "Bajar");
+    debugSerial.print(" (PWM=");
+    debugSerial.print(velocidad);
+    debugSerial.println(")");
+    lastSpeedElev = velocidad;
+    lastDirElev = subir;
+  }
   digitalWrite(BIN1_PIN, subir ? HIGH : LOW);
   digitalWrite(BIN2_PIN, subir ? LOW : HIGH);
   analogWrite(PWMB_PIN, velocidad);
 }
 
 void detenerElevacion() {
+  if (lastSpeedElev != 0) {
+    debugSerial.println("[MOT] Elevacion: Detenido");
+    lastSpeedElev = 0;
+  }
   digitalWrite(BIN1_PIN, LOW);
   digitalWrite(BIN2_PIN, LOW);
   analogWrite(PWMB_PIN, 0);
@@ -294,12 +344,25 @@ void controlarGiro(int joyVal) {
 }
 
 void moverGiro(bool horario, int velocidad) {
+  if (velocidad != lastSpeedGiro || horario != lastDirGiro) {
+    debugSerial.print("[MOT] Giro: ");
+    debugSerial.print(horario ? "Horario" : "Antihorario");
+    debugSerial.print(" (PWM=");
+    debugSerial.print(velocidad);
+    debugSerial.println(")");
+    lastSpeedGiro = velocidad;
+    lastDirGiro = horario;
+  }
   digitalWrite(CIN1_PIN, horario ? HIGH : LOW);
   digitalWrite(CIN2_PIN, horario ? LOW : HIGH);
   analogWrite(PWMC_PIN, velocidad);
 }
 
 void detenerGiro() {
+  if (lastSpeedGiro != 0) {
+    debugSerial.println("[MOT] Giro: Detenido");
+    lastSpeedGiro = 0;
+  }
   digitalWrite(CIN1_PIN, LOW);
   digitalWrite(CIN2_PIN, LOW);
   analogWrite(PWMC_PIN, 0);

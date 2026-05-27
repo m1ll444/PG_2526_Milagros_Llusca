@@ -531,7 +531,8 @@
         Documentación técnica interactiva de la arquitectura de control dual. Haz <strong>clic</strong> sobre cualquier cable en el diagrama de bloques para bloquear la selección y visualizar su propósito de hardware y lógica de firmware.
     </div>
 
-    <div class="top-bar">
+    <div class="top-bar" style="gap: 15px; display: flex; align-items: center;">
+        <a href="index.html" class="theme-toggle" style="text-decoration: none; display: flex; align-items: center; justify-content: center; border-color: var(--accent-blue);">Volver al Control</a>
         <button class="theme-toggle" id="themeToggle" type="button">Modo Oscuro</button>
     </div>
 
@@ -678,7 +679,7 @@
 
                     <!-- ARDUINO NANO (Centro Inferior) -->
                     <g id="comp-arduino">
-                        <rect x="230" y="310" width="140" height="220" rx="8" class="comp-board board-arduino"/>
+                        <rect x="230" y="310" width="140" height="240" rx="8" class="comp-board board-arduino"/>
                         <rect x="285" y="312" width="30" height="16" fill="#1e293b" stroke="#475569" rx="1"/> <!-- USB -->
                         <text x="300" y="342" class="comp-text-title" text-anchor="middle">ARDUINO NANO</text>
                         <text x="300" y="354" class="comp-text-sub" text-anchor="middle">Controlador Ejes</text>
@@ -739,6 +740,9 @@
                         
                         <circle cx="370" cy="510" r="4" class="pin-pad"/>
                         <text x="360" y="513" class="pin-txt" text-anchor="end">D12</text>
+
+                        <circle cx="370" cy="530" r="4" class="pin-pad"/>
+                        <text x="360" y="533" class="pin-txt" text-anchor="end" style="fill: var(--accent-indigo);">D13 (TX)</text>
                     </g>
 
                     <!-- DRIVER 1 - TB6612FNG (Motores Carro y Elevación) -->
@@ -939,11 +943,9 @@
                     <!-- Joy2 SW (Botón de Modo) -> Arduino D6 (Amarillo Botón) -->
                     <path d="M 160 400 L 180 400 L 180 470 L 230 470" id="wire-joy2-sw" class="connection-wire w-sig-btn"/>
 
-                    <!-- === COMUNICACIÓN UART SERIE ESP32 <-> ARDUINO (Naranja Fuerte) === -->
-                    <!-- ESP32 TX2 -> Arduino RX (D0) -->
-                    <path d="M 370 170 L 385 170 L 385 270 L 220 270 L 220 330 L 230 330" id="wire-uart-tx" class="connection-wire w-uart"/>
-                    <!-- Arduino TX (D1) -> ESP32 RX2 -->
-                    <path d="M 370 330 L 390 330 L 390 280 L 215 280 L 215 170 L 230 170" id="wire-uart-rx" class="connection-wire w-uart"/>
+                    <!-- === COMUNICACIÓN SOFTWARE_SERIAL DE LOGS (Naranja Fuerte) === -->
+                    <!-- Arduino D13 (TX Logs) -> ESP32 RX2 (GPIO 16) -->
+                    <path d="M 370 530 L 390 530 L 390 280 L 215 280 L 215 170 L 230 170" id="wire-uart-rx" class="connection-wire w-uart"/>
 
                     <!-- === SEÑALES DE CONTROL ARDUINO -> DRIVERS (Pines de Control y PWM) === -->
                     <!-- Arduino D2 -> TB6612 #1 AIN1 (Dirección Carro) -->
@@ -1035,21 +1037,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr id="row-wire-uart-tx" data-wire="wire-uart-tx">
-                            <td>ESP32</td>
-                            <td>GPIO 17 (TX2)</td>
-                            <td>Arduino Nano</td>
-                            <td>RX (D0)</td>
-                            <td>Transmisión serie de comandos de control Web</td>
-                            <td><span class="tag tag-uart">UART</span></td>
-                        </tr>
                         <tr id="row-wire-uart-rx" data-wire="wire-uart-rx">
                             <td>Arduino Nano</td>
-                            <td>TX (D1)</td>
+                            <td>D13 (TX Logs)</td>
                             <td>ESP32</td>
                             <td>GPIO 16 (RX2)</td>
-                            <td>Recepción serie de estado del Modo y telemetría</td>
-                            <td><span class="tag tag-uart">UART</span></td>
+                            <td>Línea secundaria para enviar logs de depuración del Arduino al ESP32</td>
+                            <td><span class="tag tag-uart">SoftSerial</span></td>
                         </tr>
                         <tr id="row-wire-esp32-gnd" data-wire="wire-esp32-gnd">
                             <td>ESP32</td>
@@ -1346,19 +1340,12 @@
     <script>
         // BASE DE DATOS DE CONEXIONES ENRIQUECIDA (25 Cables, algunos con bornes duplicados representados en la tabla para fines prácticos)
         const connectionDatabase = {
-            "wire-uart-tx": {
-                title: "ESP32 GPIO 17 (TX2) ──▶ Arduino RX (D0)",
-                tag: "UART SERIAL",
-                color: "#f59e0b",
-                desc: "Línea de comunicación serie para el envío de comandos desde el Servidor Web (ESP32) al controlador principal de motores (Arduino).",
-                rationale: "Permite canalizar las instrucciones recibidas en el cliente Web (como mover hacia adelante, cambiar de modo, etc.) directo al Arduino. Se conecta a D0 (RX) para procesarse mediante el buffer UART por hardware nativo a 9600 bps."
-            },
             "wire-uart-rx": {
-                title: "Arduino TX (D1) ──▶ ESP32 GPIO 16 (RX2)",
-                tag: "UART SERIAL",
+                title: "Arduino D13 (TX Logs) ──▶ ESP32 GPIO 16 (RX2)",
+                tag: "SOFTSERIAL LOGS",
                 color: "#f59e0b",
-                desc: "Línea de retorno serie para enviar confirmaciones del modo de control y el estado de la grúa desde el Arduino al ESP32.",
-                rationale: "Permite al ESP32 enterarse en tiempo real de cambios iniciados físicamente (p. ej., cuando el operador presiona el botón físico de Joystick y se cambia el modo a MANUAL, el Arduino transmite 'J' inmediatamente)."
+                desc: "Línea secundaria de comunicación serie emulada por software (SoftwareSerial) en el Arduino Nano.",
+                rationale: "Envía las trazas textuales de logs de depuración (e.g., inicio del sistema, cambios de modo, comandos USB procesados y estado de motores) desde el Arduino al ESP32 a 9600 bps, permitiendo depurar sin interferir en el Serial USB."
             },
             "wire-esp32-gnd": {
                 title: "ESP32 GND ──▶ Tierra Común",

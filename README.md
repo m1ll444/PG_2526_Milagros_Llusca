@@ -5,9 +5,9 @@
 Sistema integral de control remoto para una grúa torre con componentes IoT. Permite el control en tiempo real de movimientos (carro, elevación y giro) mediante una interfaz web responsiva.
 
 **Componentes principales:**
-- **ESP32**: Servidor web y gateway de comunicación
-- **Arduino Uno**: Controlador de motores y procesamiento de sensores
-- **Interfaz Web**: Aplicación web moderna y responsiva para control remoto
+- **Arduino Uno**: Controlador principal de motores y sensores.
+- **Interfaz Web (Web Serial)**: Panel de control web local que se comunica directamente por USB.
+- **ESP32**: Servidor inalámbrico de depuración y logs de la grúa.
 
 ---
 
@@ -21,14 +21,14 @@ Sistema integral de control remoto para una grúa torre con componentes IoT. Per
 ### Interfaz de Usuario e Interacción
 - Panel de control moderno con gradientes y efectos glassmorphism.
 - Switch toggle para control dual (Web / Manual) que inhabilita los controles web en modo manual.
-- Indicador visual del modo de control activo y sincronización en tiempo real vía polling (2s).
+- Indicador visual del modo de control activo y sincronización en tiempo real vía Web Serial.
 - Botones táctiles grandes y responsivos para control remoto.
 - Botón de parada de emergencia prominente.
 
 ### Comunicación
-- Protocolo HTTP/REST expuesto por el ESP32.
-- Comunicación serie UART bidireccional entre ESP32 (GPIO 17/16) y Arduino (D0/D1).
-- Transmisión serie de comandos simples de movimiento y estado de modo (`F`, `B`, `U`, `D`, `L`, `R`, `S`, `M`, `W`, `J`).
+- **Canal Principal**: Control directo desde el navegador vía **Web Serial API** conectado por cable USB al Serial Hardware del Arduino (pines D0/D1) a 9600 bps.
+- **Canal de Depuración**: SoftwareSerial en Arduino (pines D10 RX / D13 TX) enviando trazas a la UART del ESP32 (GPIO 16 RX) a 9600 bps.
+- **Canal de Respaldo**: Peticiones HTTP/REST al ESP32 si este actúa como gateway.
 
 ---
 
@@ -55,16 +55,18 @@ Sistema integral de control remoto para una grúa torre con componentes IoT. Per
 
 ```
 PG_2526_Milagros_Llusca/
-├── esp32/                 # Código del ESP32
-│   ├── boot.py           # Configuración inicial
-│   ├── main.py           # Servidor HTTP y WebSocket
-│   └── index.html        # Interfaz web
-├── grua_arduino/          # Código del Arduino
-│   └── grua_arduino.ino  # Control de motores
+├── arduino/               # Código C++ para Arduino Uno
+│   └── grua_arduino/
+│       └── grua_arduino.ino # Firmware de control de motores y sensores
+├── esp32/                 # Código MicroPython para ESP32
+│   ├── boot.py           # Configuración de inicio (WiFi)
+│   └── main.py           # Servidor de logs de depuración (terminal retro)
+├── web_server/            # Archivos de la interfaz web
+│   ├── index.html        # Panel de control (Web Serial API con fallback HTTP)
+│   └── schema.html       # Esquema de conexiones electrónicas interactivo
 ├── openspec/              # Especificaciones basadas en comportamiento
 │   ├── config.yaml       # Configuración de OpenSpec
 │   └── specs/            # Especificaciones de capacidades
-├── test_server.py         # Servidor de pruebas (simulación)
 └── README.md             # Este archivo
 ```
 
@@ -74,15 +76,15 @@ PG_2526_Milagros_Llusca/
 
 Este proyecto adopta **OpenSpec** para documentar formalmente los requerimientos y comportamientos esperados del sistema mediante especificaciones ejecutables basadas en escenarios:
 
-*   [Comunicación UART](openspec/specs/comunicacion-uart/spec.md): Protocolo serie y comandos de control bidireccionales entre ESP32 y Arduino.
-*   [Servidor Web](openspec/specs/servidor-web/spec.md): Interfaz web en MicroPython, polling y endpoints HTTP.
-*   [Control de Motores](openspec/specs/control-motores/spec.md): Control de hardware para los 3 motores DC y límites de velocidad.
+*   [Comunicación UART](openspec/specs/comunicacion-uart/spec.md): Protocolo serie y comandos de control bidireccionales entre navegador/ESP32 y Arduino.
+*   [Servidor Web](openspec/specs/servidor-web/spec.md): Terminal de logs en MicroPython expuesta por el ESP32.
+*   [Control de Motores](openspec/specs/control-motores/spec.md): Control de hardware para los 3 motores DC, límites de velocidad y logs SoftwareSerial.
 *   [Lógica de Prioridad y Seguridad](openspec/specs/control-prioridad-seguridad/spec.md): Exclusividad de los modos y temporización de seguridad.
 *   [Modo de Control Dual](openspec/specs/modo-control-dual/spec.md): Conmutación e intercambio de señales de sincronización.
 *   [Esquema de Conexiones](openspec/specs/schema-conexiones/spec.md): Especificación del esquema de hardware interactivo.
 
-Adicionalmente, puedes consultar el documento autocontenido de conexiones de hardware:
-*   [Esquema Electrónico Interactivo (Schema.html)](Schema.html): Contiene el diagrama de bloques SVG y la tabla pin-a-pin interactiva.
+Adicionalmente, puedes consultar el documento de conexiones de hardware:
+*   [Esquema Electrónico Interactivo (web_server/schema.html)](web_server/schema.html): Contiene el diagrama de bloques SVG actualizado y la tabla pin-a-pin interactiva.
 
 ---
 
@@ -92,49 +94,47 @@ Adicionalmente, puedes consultar el documento autocontenido de conexiones de har
 
 #### 1. Configurar ESP32
 ```bash
-# Instalar MicroPython en ESP32
-# Usar esptool.py o Thonny IDE
-# Cargar boot.py y main.py en el ESP32
+# Instalar MicroPython en ESP32 (usar esptool.py o Thonny IDE)
+# Cargar boot.py y main.py de la carpeta esp32/ al ESP32
 ```
 
 #### 2. Configurar Arduino
 ```bash
 # Abrir Arduino IDE
-# Cargar el código desde grua_arduino/grua_arduino.ino
+# Cargar el código desde arduino/grua_arduino/grua_arduino.ino
 # Verificar conexión de pines según el esquema
 ```
 
 #### 3. Conexiones de Hardware
-Para ver todas las conexiones de pines y la topología física detallada, consulta el archivo [Schema.html](Schema.html) o el especificado de conexiones.
+Para ver todas las conexiones de pines y la topología física detallada, consulta el archivo [schema.html](web_server/schema.html) o la especificación de conexiones.
 Resumen de conexiones clave (Arduino):
 - **Motor Carro (TB6612FNG #1)**: AIN1 (D2), AIN2 (D4), PWMA (D3)
 - **Motor Elevación (TB6612FNG #1)**: BIN1 (D7), BIN2 (D8), PWMB (D5)
 - **Motor Giro (TB6612FNG #2)**: CIN1 (D11), CIN2 (D12), PWMC (D9)
+- **SoftwareSerial Logs (a ESP32)**: D10 (RX - libre / no conectado), D13 (TX -> GPIO 16 RX de ESP32)
 - **Joysticks**: X (Carro) -> A0, Y (Elevación) -> A1, Z (Giro) -> A2
 - **Botón de Modo (Pulsador)**: D6
 
-### Usar la Interfaz Web
+### Usar la Interfaz Web de Control
 
-1. **Conectarse a la Red WiFi:**
-   - El ESP32 crea una red WiFi o se conecta a una de ellas.
-   - Abrir el navegador y acceder a `http://<IP_ESP32>` (puerto 80).
+1. **Abrir la Interfaz de Control:**
+   - Abrir el archivo `web_server/index.html` localmente en un navegador compatible con Web Serial API (Google Chrome, Microsoft Edge, Opera).
 
-2. **Controlar la Grúa:**
-   - Activar el switch **WEB** en la parte superior para habilitar el control remoto. En modo **MANUAL**, los controles web estarán deshabilitados.
+2. **Conectar el Puerto USB:**
+   - Hacer clic en el botón **"Conectar USB"** en el encabezado.
+   - En el diálogo emergente del navegador, seleccionar el puerto serie correspondiente a la placa Arduino Uno/Nano y pulsar "Conectar". El indicador cambiará a **"USB Conectado"**.
+
+3. **Controlar la Grúa:**
+   - Activar el switch **WEB** para habilitar el control remoto. En modo **MANUAL**, los controles web estarán deshabilitados.
    - Mantener pulsado el botón de la dirección deseada para mover la grúa, y soltarlo para detenerla.
    - Presionar **PARADA / STOP** para una detención total inmediata.
 
-3. **Indicadores:**
-   - El punto verde indica "Sistema Online".
-   - El indicador muestra en tiempo real el modo activo (`WEB` o `MANUAL`) y se actualiza mediante consulta (polling cada 2s) y confirmaciones UART asíncronas.
+### Usar la Terminal Inalámbrica de Logs (ESP32)
 
-### Modo de Prueba
-
-Para pruebas sin hardware:
-```bash
-python test_server.py
-# Se abrirá localhost:8080 con servidor simulado
-```
+1. **Conectarse a la Red WiFi:**
+   - Conectarse al punto de acceso WiFi emitido por el ESP32 (por defecto "Grua_Torre_Debug" o la red configurada en `boot.py`).
+   - Abrir el navegador en el móvil o PC e ingresar a `http://192.168.4.1` (o la IP del ESP32).
+   - Se mostrará la terminal retro verde y negra con los últimos 50 logs de operación de la grúa, auto-refrescándose cada 2 segundos.
 
 ---
 
