@@ -7,6 +7,7 @@ uart = machine.UART(2, baudrate=9600, tx=17, rx=16)
 
 # Variable global de modo de control
 current_mode = 'MANUAL'
+current_telemetry = 'MANUAL,S,S,S'
 
 def leer_html():
     try:
@@ -19,19 +20,28 @@ def leer_html():
 html_content = leer_html()
 
 async def leer_uart_modo():
-    """Tarea asíncrona para leer estado de modo desde Arduino."""
-    global current_mode
+    """Tarea asíncrona para leer telemetría desde Arduino."""
+    global current_mode, current_telemetry
+    uart_buffer = ""
     while True:
         if uart.any():
-            data = uart.read(1)
+            data = uart.read(uart.any())
             if data:
-                char = data.decode('utf-8', 'ignore')
-                if char == 'W':
-                    current_mode = 'WEB'
-                    print(f"Modo actualizado: {current_mode}")
-                elif char == 'J':
-                    current_mode = 'MANUAL'
-                    print(f"Modo actualizado: {current_mode}")
+                try:
+                    text = data.decode('utf-8', 'ignore')
+                    uart_buffer += text
+                    while '\n' in uart_buffer:
+                        line, uart_buffer = uart_buffer.split('\n', 1)
+                        line = line.strip()
+                        if line.startswith('S:'):
+                            parts = line[2:].split(',')
+                            if len(parts) == 4:
+                                mode_char, carro, elev, giro = parts
+                                current_mode = 'WEB' if mode_char == 'W' else 'MANUAL'
+                                current_telemetry = f"{current_mode},{carro},{elev},{giro}"
+                                print(f"Telemetria: {current_telemetry}")
+                except Exception as e:
+                    print("Error leyendo UART:", e)
         await asyncio.sleep_ms(50)
 
 async def handle_client(reader, writer):
@@ -85,6 +95,11 @@ async def handle_client(reader, writer):
             # Endpoint para consultar modo actual
             elif path == '/mode':
                 response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\n" + current_mode
+                await writer.awrite(response)
+                
+            # Endpoint para consultar telemetría actual
+            elif path == '/status':
+                response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nAccess-Control-Allow-Origin: *\r\n\r\n" + current_telemetry
                 await writer.awrite(response)
                 
             else:
