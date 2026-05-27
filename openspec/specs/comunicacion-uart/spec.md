@@ -2,48 +2,27 @@
 
 ## Purpose
 Define el protocolo de comunicación serie bidireccional y el set de comandos que permite coordinar el modo de control y enviar instrucciones de movimiento entre el ESP32 y el Arduino Nano/Uno.
-
 ## Requirements
-
 ### Requirement: Configuración de Interfaz Serie Bidireccional
-La comunicación física SHALL realizarse mediante una línea serie dedicada utilizando los siguientes parámetros:
-- **Baudrate:** 9600 bps
-- **Canal de Transmisión (ESP32 a Arduino):** Desde ESP32 TX (GPIO 17) hacia Arduino RX (D0).
-- **Canal de Recepción (Arduino a ESP32):** Desde Arduino TX (D1) hacia ESP32 RX (GPIO 16).
+La comunicación física SHALL realizarse mediante dos canales serie independientes:
+- **Canal Principal (Serial hardware, USB):** Comunicación bidireccional entre el Arduino y el navegador web vía cable USB a 9600 bps. Pines D0 (RX) y D1 (TX) del Arduino.
+- **Canal Secundario (SoftwareSerial, depuración):** Comunicación unidireccional desde el Arduino (TX en pin D13) hacia el ESP32 (RX en GPIO 16) a 9600 bps para trazas de depuración.
 
-#### Scenario: Inicialización de la línea serie
-- **WHEN** El sistema arranca de manera normal.
-- **THEN** El ESP32 SHALL configurar el puerto UART2 a 9600 baudios utilizando TX (17) y RX (16). El Arduino SHALL inicializar `Serial` a 9600 baudios.
+#### Scenario: Inicialización de ambos canales serie
+- **WHEN** El Arduino arranca en su rutina `setup()`.
+- **THEN** El sistema SHALL inicializar `Serial` (hardware) a 9600 bps para comunicación USB con el navegador, y `SoftwareSerial` en pines D10/D13 a 9600 bps para envío de logs al ESP32.
 
 ### Requirement: Protocolo y Set de Comandos de Movimiento y Modo
-El protocolo SHALL consistir en enviar caracteres ASCII de un solo byte correspondientes al movimiento o al cambio de modo deseado:
-- **Comandos de movimiento (ESP32 → Arduino):**
-  - `F` (Forward / Adelante)
-  - `B` (Backward / Atrás)
-  - `U` (Up / Subir)
-  - `D` (Down / Bajar)
-  - `L` (Left / Izquierda)
-  - `R` (Right / Derecha)
-  - `S` (Stop / Parar)
-- **Comando de cambio de modo (ESP32 → Arduino):**
-  - `M` (Toggle Mode / Alternar Modo)
-- **Estados de modo de control (Arduino → ESP32):**
-  - `W` (Web Mode / Modo Web activo)
-  - `J` (Joystick Mode / Modo Manual activo)
+El protocolo de comandos de movimiento y modo SHALL operar por el canal Serial hardware (USB). Los comandos válidos son:
+- **Comandos de movimiento (Navegador → Arduino):** `F`, `B`, `U`, `D`, `L`, `R`, `S`
+- **Comando de cambio de modo (Navegador → Arduino):** `M`
+- **Telemetría (Arduino → Navegador):** Tramas en formato `S:<modo>,<carro>,<elev>,<giro>\n` cada 100ms.
 
-#### Scenario: Envío de comando de movimiento desde la web
-- **WHEN** El usuario presiona el botón "Adelante" (F) en la interfaz web del ESP32.
-- **THEN** El ESP32 SHALL escribir el byte `F` por el puerto serie.
+#### Scenario: Recepción de comando por USB desde Web Serial
+- **WHEN** El navegador envía el byte `F` por Web Serial API al Arduino.
+- **THEN** El Arduino SHALL almacenar el comando en la variable `webCommand`, actualizar `lastWebCommandTime`, y enviar una traza `[CMD] Recibido: F` por SoftwareSerial al ESP32.
 
-#### Scenario: Recepción de comando de movimiento válido en Arduino
-- **WHEN** El Arduino recibe el byte `U` a través del puerto serie.
-- **THEN** El Arduino SHALL almacenar el comando en la variable `webCommand` y actualizar la marca de tiempo `lastWebCommandTime`.
-
-#### Scenario: Envío de comando de parada (STOP)
-- **WHEN** El usuario suelta cualquier botón de movimiento o presiona "STOP" en la interfaz.
-- **THEN** El ESP32 SHALL escribir el byte `S` por el puerto serie.
-
-#### Scenario: Sincronización bidireccional al alternar modo
-- **WHEN** El ESP32 recibe una petición de cambio de modo y envía el byte `M` al Arduino, o el operador presiona el botón físico en el joystick.
-- **THEN** El Arduino SHALL alternar el estado de `modoWeb` y responder inmediatamente enviando el byte `W` (si el nuevo modo es Web) o `J` (si es Manual) al ESP32 para confirmar y sincronizar el estado.
+#### Scenario: Envío de telemetría por USB al navegador
+- **WHEN** Transcurren 100ms desde la última trama de telemetría.
+- **THEN** El Arduino SHALL enviar una trama `S:W,F,S,S\n` por el Serial hardware USB para que el navegador la lea vía Web Serial API.
 

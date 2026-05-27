@@ -2,9 +2,7 @@
 
 ## Purpose
 Define cómo el Arduino procesa los comandos físicos y lógicos para regular la dirección y velocidad de los tres motores de la grúa torre.
-
 ## Requirements
-
 ### Requirement: Control del Carro (Motor DC A)
 El sistema SHALL controlar el motor DC N20 (12V) del carro mediante la mitad A del driver puente H TB6612FNG con los siguientes pines:
 - `AIN1` (D2) y `AIN2` (D4): Dirección.
@@ -53,4 +51,15 @@ El sistema SHALL permitir configurar de forma independiente el límite superior 
 #### Scenario: Límite de velocidad en comando web
 - **WHEN** Se ejecuta un comando web de movimiento (por ejemplo, `F` o `R`).
 - **THEN** La velocidad máxima aplicada al pin PWM correspondiente SHALL estar limitada por la constante `MAX_SPEED_*` respectiva.
+
+### Requirement: Trazas de depuración de motores por SoftwareSerial
+El Arduino SHALL emitir trazas de depuración por el canal SoftwareSerial (pin D13 TX) que informen del estado operativo de los motores cuando se producen cambios de estado relevantes.
+
+#### Scenario: Log al iniciar movimiento de un motor
+- **WHEN** Un motor pasa del estado detenido a un estado de movimiento (por comando web o joystick).
+- **THEN** El Arduino SHALL enviar una traza por SoftwareSerial como `[MOT] Carro: Adelante (PWM=255)`.
+
+#### Scenario: Log al detener un motor por timeout web
+- **WHEN** El timeout de seguridad web (500ms) se activa y detiene los motores.
+- **THEN** El Arduino SHALL enviar una traza `[SAFE] Timeout web - motores detenidos` por SoftwareSerial.
 
