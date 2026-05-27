@@ -3,56 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Control Grúa Torre</title>    <style>
+    <title>CONTROL GRÚA</title>
+    <style>
+        /* ============ BRUSHED SILVER THEME — EMBEDDED (no CDN) ============ */
         :root {
-            --bg-color: #0f172a;
-            --surface-color: rgba(30, 41, 59, 0.7);
-            --primary-color: #3b82f6;
-            --primary-hover: #2563eb;
-            --danger-color: #ef4444;
-            --danger-hover: #dc2626;
-            --success-color: #10b981;
-            --text-color: #f8fafc;
-            --text-muted: #94a3b8;
+            /* Silver / Metallic palette */
+            --bg-silver: #C0C0C0;
+            --surface: #d1d5db;
+            --surface-low: #cbd5e1;
+            --surface-high: #e5e7eb;
+            --surface-bright: #f3f4f6;
+            --on-surface: #131313;
+            --on-surface-variant: #4d4d4d;
+            --outline: #9ca3af;
+            --outline-variant: #94a3b8;
+            /* Copper / Rose‑gold accent */
+            --primary: #8C5A4E;
+            --primary-container: #c38e7f;
+            --primary-dim: #f3b9a9;
+            --primary-bright: #ffdbd1;
+            --on-primary: #ffffff;
+            /* Functional */
+            --error: #b91c1c;
+            --error-surface: #93000a;
+            --success: #10b981;
+            --warning: #fbbf24;
+            --info: #3b82f6;
+            /* Text */
+            --text-muted: #6b7280;
             --disabled-opacity: 0.35;
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-silver);
+            background-image: linear-gradient(135deg, #d1d5db 0%, #a1a1aa 50%, #d1d5db 100%);
+            color: var(--on-surface);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+            overflow: hidden;
             touch-action: none;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(239, 68, 68, 0.1) 0px, transparent 50%);
         }
 
-        h1 {
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-            font-size: 1.75rem;
+        /* ============ UTILITY CLASSES ============ */
+        .code-font { font-family: 'Consolas', 'Courier New', monospace; }
+
+        .metallic-trim {
+            background: linear-gradient(90deg, #8C5A4E 0%, #C38E7F 50%, #8C5A4E 100%);
+        }
+
+        .brushed-silver {
+            background: linear-gradient(to right, #d1d5db, #f3f4f6, #d1d5db);
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* ============ SCROLLBAR ============ */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #d1d5db; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #8C5A4E; border-radius: 2px; }
+
+        /* ============ HEADER ============ */
+        header {
+            background: rgba(209,213,219,0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 2px solid rgba(140,90,78,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1.5rem;
+            height: 3.5rem;
+            flex-shrink: 0;
+            z-index: 50;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-brand h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+            background: none;
+            -webkit-text-fill-color: var(--primary);
+        }
+
+        .header-version {
+            background: var(--primary);
+            color: white;
+            padding: 0.15rem 0.5rem;
+            font-size: 0.65rem;
             font-weight: 700;
-            letter-spacing: -0.025em;
-            text-align: center;
-            background: linear-gradient(to right, #60a5fa, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            border-radius: 2px;
         }
 
-        .status {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            margin-bottom: 1rem;
+        .header-status {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--on-surface-variant);
         }
 
         .status-dot {
@@ -60,120 +128,96 @@
             height: 8px;
             background-color: #10b981;
             border-radius: 50%;
-            box-shadow: 0 0 10px #10b981;
+            box-shadow: 0 0 8px #10b981;
+            transition: all 0.3s ease;
         }
 
-        /* ============ DASHBOARD CONTAINER ============ */
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-            width: 100%;
-            max-width: 900px;
-            padding: 0 1.5rem;
-            box-sizing: border-box;
+        /* ============ MAIN LAYOUT ============ */
+        .app-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
         }
 
-        @media (min-width: 768px) {
-            .dashboard-container {
-                grid-template-columns: 1fr 1.2fr;
-                align-items: start;
-                gap: 2rem;
-            }
-        }
-
-        .controls-column, .monitoring-column {
-            width: 100%;
+        /* ============ SIDEBAR ============ */
+        nav {
+            background: var(--surface-low);
+            border-right: 3px solid rgba(0,0,0,0.15);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
+            width: 15rem;
+            flex-shrink: 0;
+            z-index: 40;
         }
 
-        /* ============ MODE SWITCH ============ */
+        .nav-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(148,163,184,0.3);
+        }
+
+        .nav-header-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .nav-header-sub {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* ---- Mode toggle (inside sidebar) ---- */
         .mode-container {
-            background: var(--surface-color);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 1rem 1.5rem;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(148,163,184,0.3);
             display: flex;
             align-items: center;
-            gap: 1rem;
-            width: 100%;
-            box-sizing: border-box;
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            gap: 0.75rem;
         }
 
         .mode-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
             font-weight: 600;
-            flex-shrink: 0;
         }
 
-        .mode-indicator {
-            font-size: 0.85rem;
-            font-weight: 700;
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-            margin-left: auto;
-        }
-
-        .mode-indicator.manual {
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .mode-indicator.web {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        /* Toggle Switch */
         .switch {
             position: relative;
-            width: 52px;
-            height: 28px;
+            width: 44px;
+            height: 24px;
             flex-shrink: 0;
         }
 
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        .switch input { opacity: 0; width: 0; height: 0; }
 
         .slider {
             position: absolute;
             cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(239, 68, 68, 0.3);
+            inset: 0;
+            background-color: rgba(140,90,78,0.25);
             transition: 0.3s;
-            border-radius: 28px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            border: 1px solid rgba(0,0,0,0.15);
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
-            left: 3px;
-            bottom: 3px;
-            background-color: #f8fafc;
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background: linear-gradient(135deg, #f3f4f6, #d1d5db);
             transition: 0.3s;
             border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
 
         input:checked + .slider {
@@ -182,175 +226,466 @@
         }
 
         input:checked + .slider:before {
-            transform: translateX(24px);
+            transform: translateX(20px);
         }
 
-        /* ============ CONTROLS ============ */
-        .controls-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-            width: 100%;
-            box-sizing: border-box;
+        .mode-indicator {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            margin-left: auto;
+        }
+
+        .mode-indicator.manual {
+            background: rgba(140,90,78,0.15);
+            color: var(--primary);
+            border: 1px solid rgba(140,90,78,0.3);
+        }
+
+        .mode-indicator.web {
+            background: rgba(16, 185, 129, 0.15);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* ---- Nav control buttons ---- */
+        .nav-controls {
+            flex: 1;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            overflow-y: auto;
             transition: opacity 0.3s ease, filter 0.3s ease;
         }
 
-        .controls-container.disabled {
+        .nav-controls.disabled {
             opacity: var(--disabled-opacity);
             pointer-events: none;
             filter: grayscale(0.5);
         }
 
         .control-group {
-            background: var(--surface-color);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-            width: 100%;
+            background: rgba(255,255,255,0.4);
+            border: 1px solid rgba(255,255,255,0.6);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
         }
 
         .control-title {
-            font-size: 0.875rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 1rem;
-            font-weight: 600;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: rgba(255,255,255,0.5);
+            padding: 0.2rem 0.5rem;
+            border-radius: 2px;
+            border: 1px solid rgba(148,163,184,0.2);
+            display: inline-block;
+            width: 100%;
+        }
+
+        .linear-controls {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
         }
 
         .btn {
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-color);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            font-size: 1.5rem;
+            background: rgba(255,255,255,0.4);
+            border: 1px solid rgba(140,90,78,0.4);
+            color: var(--primary);
+            border-radius: 0.35rem;
+            padding: 0.6rem;
+            font-size: 1.25rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             display: flex;
             justify-content: center;
             align-items: center;
             user-select: none;
             -webkit-user-select: none;
+            width: 3.5rem;
+            height: 3.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .btn:hover {
+            background: var(--primary);
+            color: var(--on-primary);
         }
 
         .btn:active, .btn.active {
-            background-color: var(--primary-color);
-            transform: scale(0.95);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+            background: var(--primary);
+            color: var(--on-primary);
+            transform: scale(0.93);
+            box-shadow: 0 0 12px rgba(140,90,78,0.5);
         }
 
-        .linear-controls {
-            display: flex;
-            gap: 1rem;
-            width: 100%;
-            justify-content: center;
-        }
-        
-        .linear-controls .btn {
-            width: 4rem;
-            height: 4rem;
+        .btn svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
         }
 
         .btn-stop {
-            background-color: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.3);
-            color: var(--danger-color);
-            width: 100%;
-            font-size: 1rem;
-            font-weight: 600;
-            padding: 1rem;
-            border-radius: 1rem;
-            letter-spacing: 0.05em;
-            box-sizing: border-box;
-        }
-
-        .btn-stop:active {
-            background-color: var(--danger-color);
+            background: linear-gradient(90deg, #8C5A4E 0%, #C38E7F 50%, #8C5A4E 100%);
+            border: 2px solid rgba(255,255,255,0.4);
             color: white;
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+            width: 100%;
+            height: auto;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 1rem;
+            border-radius: 0.35rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+            box-shadow: 0 4px 12px rgba(140,90,78,0.4);
+            position: relative;
+            overflow: hidden;
         }
 
-        svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
+        .btn-stop:active, .btn-stop.active {
+            transform: scale(0.95);
+            box-shadow: 0 0 20px rgba(185,28,28,0.6);
+            background: var(--error);
         }
 
         .disabled-notice {
             text-align: center;
             color: var(--text-muted);
-            font-size: 0.8rem;
-            margin-top: -0.5rem;
+            font-size: 0.7rem;
+            padding: 0.5rem 0.75rem;
             opacity: 0;
             transition: opacity 0.3s ease;
-            padding: 0 1.5rem;
         }
 
-        .disabled-notice.visible {
-            opacity: 1;
-        }
+        .disabled-notice.visible { opacity: 1; }
 
-        /* ============ MONITORING PANEL ============ */
-        .monitoring-panel {
-            background: var(--surface-color);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
+        /* ============ MAIN CONTENT ============ */
+        main {
+            flex: 1;
+            overflow-y: auto;
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
+            gap: 1.25rem;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* ---- Gauges row ---- */
+        .gauges-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        .gauge-card {
+            background: linear-gradient(to right, #d1d5db, #f3f4f6, #d1d5db);
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 6px rgba(0,0,0,0.12);
+            border: 3px solid rgba(0,0,0,0.12);
+            border-radius: 0.35rem;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .gauge-card-header {
             width: 100%;
-            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .gauge-card-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.6);
+            color: var(--on-surface-variant);
+            padding: 0.2rem 0.6rem;
+            border-radius: 2px;
+            border: 1px solid rgba(148,163,184,0.2);
+            letter-spacing: 0.03em;
+        }
+
+        .gauge-card-status {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+        }
+
+        /* Circular gauge */
+        .gauge-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+        }
+
+        .gauge-svg { transform: rotate(-90deg); }
+
+        .gauge-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .gauge-unit {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Bar gauge (for carro) */
+        .bar-gauge-wrap {
+            display: flex;
+            gap: 1.5rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        .bar-gauge {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            background: rgba(255,255,255,0.3);
+            border: 1px solid rgba(148,163,184,0.3);
+            border-radius: 0.25rem;
+            position: relative;
+            height: 160px;
+            overflow: hidden;
+            padding: 2px;
+        }
+
+        .bar-gauge-fill {
+            background: linear-gradient(to top, #8C5A4E, #C38E7F);
+            width: 100%;
+            transition: height 0.3s ease;
+            border-radius: 0.15rem;
+            position: relative;
+            border-top: 1px solid rgba(140,90,78,0.3);
+            box-shadow: 0 -2px 8px rgba(140,90,78,0.25);
+        }
+
+        .bar-gauge-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: rgba(255,255,255,0.7);
+            box-shadow: 0 0 8px white;
+        }
+
+        .bar-gauge-labels {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 0.25rem 0.3rem;
+            font-size: 0.5rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .bar-gauge-btns {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .bar-gauge-btns .dir-btn {
+            width: 2.75rem;
+            height: 2.75rem;
+            background: rgba(255,255,255,0.4);
+            border: 1px solid rgba(140,90,78,0.4);
+            border-radius: 0.25rem;
+            color: var(--primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .bar-gauge-btns .dir-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ---- 3D Simulator ---- */
+        .simulator-card {
+            flex: 1;
+            min-height: 320px;
+            background: linear-gradient(135deg, #d1d5db 0%, #a1a1aa 100%);
+            border: 3px solid rgba(0,0,0,0.12);
+            border-radius: 0.35rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .simulator-label {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            z-index: 10;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            background: var(--primary);
+            color: white;
+            padding: 0.3rem 0.75rem;
+            border-radius: 2px;
+            box-shadow: 0 2px 6px rgba(140,90,78,0.4);
+        }
+
+        .simulator-grid {
+            position: absolute;
+            inset: 0;
+            opacity: 0.08;
+            background-image: radial-gradient(#131313 1px, transparent 0);
+            background-size: 28px 28px;
+        }
+
+        .simulator-svg-wrap {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .visualizer-container {
             width: 100%;
-            height: 280px;
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 1.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100%;
             position: relative;
-            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
         }
 
-        .telemetry-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.75rem;
+        #crane-svg {
             width: 100%;
-            margin-top: 1.25rem;
+            height: 100%;
+        }
+
+        /* Overlay indicators */
+        .simulator-indicators {
+            position: absolute;
+            bottom: 0.75rem;
+            right: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .sim-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255,255,255,0.6);
+            border: 1px solid rgba(140,90,78,0.2);
+            padding: 0.3rem 0.5rem;
+            border-radius: 2px;
+            backdrop-filter: blur(8px);
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--on-surface-variant);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .sim-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .sim-dot.pulse {
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ============ RIGHT SIDEBAR (TELEMETRY) ============ */
+        aside {
+            width: 16rem;
+            background: var(--surface);
+            border-left: 3px solid rgba(0,0,0,0.12);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .aside-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--primary);
+            padding: 1rem;
+            border-bottom: 1px solid rgba(140,90,78,0.3);
+        }
+
+        /* Telemetry grid in sidebar */
+        .telemetry-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.75rem;
         }
 
         .telemetry-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 1rem;
-            padding: 0.75rem 0.5rem;
+            background: rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 0.35rem;
+            padding: 0.75rem;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 0.25rem;
-            width: 100%;
-            box-sizing: border-box;
         }
 
         .telemetry-label {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
@@ -358,46 +693,166 @@
         }
 
         .telemetry-value {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #60a5fa;
-            font-family: monospace;
-            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            color: var(--primary);
+        }
+
+        .telemetry-dirs {
+            display: flex;
+            justify-content: center;
+            gap: 0.35rem;
+            margin-top: 0.2rem;
         }
 
         .telemetry-dir {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             font-weight: 700;
             padding: 0.15rem 0.35rem;
-            border-radius: 0.25rem;
-            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            background: rgba(255,255,255,0.3);
             color: var(--text-muted);
             transition: all 0.2s ease;
         }
 
         .telemetry-dir.active {
-            background: rgba(59, 130, 246, 0.25);
-            color: #60a5fa;
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+            background: rgba(140,90,78,0.25);
+            color: var(--primary);
+            box-shadow: 0 0 8px rgba(140,90,78,0.35);
         }
 
-        .footer-spacer {
-            height: 2rem;
+        /* Telemetry log */
+        .telemetry-log {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            border-top: 1px solid rgba(148,163,184,0.3);
         }
-    </style>>
+
+        .log-entry {
+            padding: 0.35rem 0.5rem;
+            background: rgba(255,255,255,0.25);
+            border-left: 2px solid rgba(140,90,78,0.4);
+            font-size: 0.6rem;
+            color: var(--on-surface-variant);
+            animation: log-in 0.3s ease;
+        }
+
+        .log-entry .log-time { opacity: 0.5; }
+
+        @keyframes log-in {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============ FOOTER ============ */
+        footer {
+            background: var(--surface-bright);
+            border-top: 1px solid rgba(148,163,184,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 1.5rem;
+            flex-shrink: 0;
+            z-index: 50;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .footer-brand {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .footer-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .footer-stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .footer-dot {
+            width: 4px;
+            height: 4px;
+            background: rgba(140,90,78,0.4);
+            border-radius: 50%;
+        }
+
+        .footer-rec {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            animation: pulse-dot 2s infinite;
+        }
+
+        /* ============ RESPONSIVE (mobile) ============ */
+        @media (max-width: 900px) {
+            .app-body { flex-direction: column; }
+            nav { width: 100%; flex-direction: row; height: auto; border-right: none; border-bottom: 3px solid rgba(0,0,0,0.15); }
+            .nav-header { display: none; }
+            .mode-container { border-bottom: none; padding: 0.5rem 0.75rem; }
+            .nav-controls {
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding: 0.5rem;
+                gap: 0.35rem;
+                justify-content: center;
+            }
+            .control-group { padding: 0.5rem; }
+            .control-title { font-size: 0.55rem; margin-bottom: 0.3rem; }
+            .btn { width: 2.75rem; height: 2.75rem; font-size: 1rem; padding: 0.4rem; }
+            .btn-stop { padding: 0.6rem; font-size: 0.65rem; }
+            aside { width: 100%; max-height: 200px; border-left: none; border-top: 3px solid rgba(0,0,0,0.12); }
+            .gauges-row { grid-template-columns: 1fr; }
+            .gauge-container { width: 120px; height: 120px; }
+            .simulator-card { min-height: 220px; }
+            main { padding: 0.75rem; gap: 0.75rem; }
+            footer { padding: 0.3rem 0.75rem; }
+            .footer-stats { display: none; }
+        }
+    </style>
 </head>
 <body>
+    <!-- ========== HEADER ========== -->
+    <header>
+        <div class="header-brand">
+            <h1>CONTROL GRÚA</h1>
+            <span class="header-version">V4.2.0</span>
+        </div>
+        <div class="header-status">
+            <div class="status-dot"></div>
+            <span id="status-text">LINK: CONNECTING</span>
+        </div>
+    </header>
 
-    <h1>Control Grúa Torre</h1>
-    <div class="status">
-        <div class="status-dot"></div>
-        <span>Sistema Online</span>
-    </div>
+    <div class="app-body">
+        <!-- ========== SIDEBAR (Controls) ========== -->
+        <nav>
+            <div class="nav-header">
+                <div class="nav-header-title">OPERATOR_01</div>
+                <div class="nav-header-sub">CONTROL</div>
+            </div>
 
-    <div class="dashboard-container">
-        <!-- Columna Izquierda: Controles -->
-        <div class="controls-column">
-            <!-- Mode Switch -->
+            <!-- Mode Toggle -->
             <div class="mode-container">
                 <span class="mode-label">Modo</span>
                 <label class="switch" id="mode-switch-label">
@@ -407,9 +862,9 @@
                 <span class="mode-indicator manual" id="mode-text">MANUAL</span>
             </div>
 
-            <!-- Controls -->
-            <div class="controls-container disabled" id="controls-container">
-                <!-- Control de Carro -->
+            <!-- Control Buttons -->
+            <div class="nav-controls disabled" id="controls-container">
+                <!-- Carro -->
                 <div class="control-group">
                     <div class="control-title">Carro</div>
                     <div class="linear-controls">
@@ -422,7 +877,7 @@
                     </div>
                 </div>
 
-                <!-- Control de Elevación -->
+                <!-- Elevación -->
                 <div class="control-group">
                     <div class="control-title">Elevación</div>
                     <div class="linear-controls">
@@ -435,7 +890,7 @@
                     </div>
                 </div>
 
-                <!-- Control de Giro -->
+                <!-- Giro -->
                 <div class="control-group">
                     <div class="control-title">Giro</div>
                     <div class="linear-controls">
@@ -448,20 +903,74 @@
                     </div>
                 </div>
 
-                <!-- Parada de Emergencia -->
-                <button class="btn btn-stop command-btn" data-cmd="S">PARADA / STOP</button>
+                <!-- Emergency Stop -->
+                <button class="btn-stop command-btn" data-cmd="S">⚠ PARADA DE EMERGENCIA</button>
             </div>
 
             <p class="disabled-notice visible" id="disabled-notice">
-                ⚠ Activa el modo WEB para controlar desde aquí
+                ⚠ Activa el modo WEB para controlar
             </p>
-        </div>
+        </nav>
 
-        <!-- Columna Derecha: Monitoreo -->
-        <div class="monitoring-column">
-            <div class="monitoring-panel">
-                <div class="control-title" style="margin-bottom: 0.75rem; text-align: center;">Monitoreo de Operación</div>
-                
+        <!-- ========== MAIN CONTENT ========== -->
+        <main class="custom-scrollbar">
+            <!-- Gauge Cards Row -->
+            <div class="gauges-row">
+                <!-- GIRO Gauge -->
+                <div class="gauge-card">
+                    <div class="gauge-card-header">
+                        <span class="gauge-card-label">GIRO (NEMA 17)</span>
+                        <span class="gauge-card-status">AZIMUTH</span>
+                    </div>
+                    <div class="gauge-container">
+                        <svg class="gauge-svg" viewBox="0 0 100 100" width="100%" height="100%">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#d1d5db" stroke-width="6"></circle>
+                            <circle id="gauge-giro-arc" cx="50" cy="50" r="45" fill="none" stroke="#C38E7F" stroke-width="6"
+                                stroke-dasharray="282.7" stroke-dashoffset="282.7" stroke-linecap="round"
+                                style="filter: drop-shadow(0 0 4px rgba(195,142,127,0.5));"></circle>
+                        </svg>
+                        <div class="gauge-center">
+                            <span class="gauge-value" id="gauge-giro-val">0°</span>
+                            <span class="gauge-unit">Azimuth</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARRO Gauge -->
+                <div class="gauge-card">
+                    <div class="gauge-card-header">
+                        <span class="gauge-card-label">CARRO (DC MOTOR)</span>
+                        <span class="gauge-card-status" id="carro-pos-label">POS: 0%</span>
+                    </div>
+                    <div class="bar-gauge-wrap">
+                        <div class="bar-gauge">
+                            <div class="bar-gauge-fill" id="carro-bar-fill" style="height: 0%;"></div>
+                            <div class="bar-gauge-labels code-font">
+                                <span>100%</span>
+                                <span>75%</span>
+                                <span>50%</span>
+                                <span>25%</span>
+                                <span>0%</span>
+                            </div>
+                        </div>
+                        <div class="bar-gauge">
+                            <div class="bar-gauge-fill" id="gancho-bar-fill" style="height: 0%;"></div>
+                            <div class="bar-gauge-labels code-font">
+                                <span>▲</span>
+                                <span></span>
+                                <span>HOOK</span>
+                                <span></span>
+                                <span>▼</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3D Simulator -->
+            <div class="simulator-card">
+                <div class="simulator-label">SIMULADOR 3D EN TIEMPO REAL</div>
+                <div class="simulator-grid"></div>
                 <div class="visualizer-container">
                     <svg id="crane-svg" viewBox="0 0 320 260" width="100%" height="100%">
                         <defs>
@@ -470,19 +979,19 @@
                                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
                             </filter>
                         </defs>
-                        
+
                         <!-- Radar/Base Holográfica -->
-                        <ellipse cx="160" cy="220" rx="90" ry="45" fill="none" stroke="rgba(59, 130, 246, 0.15)" stroke-width="1" stroke-dasharray="4 4" />
-                        <ellipse cx="160" cy="220" rx="60" ry="30" fill="none" stroke="rgba(59, 130, 246, 0.1)" stroke-width="1" stroke-dasharray="4 4" />
-                        <ellipse cx="160" cy="220" rx="30" ry="15" fill="none" stroke="rgba(59, 130, 246, 0.05)" stroke-width="1" stroke-dasharray="4 4" />
-                        <line x1="70" y1="220" x2="250" y2="220" stroke="rgba(59, 130, 246, 0.08)" stroke-width="1" />
-                        <line x1="160" y1="175" x2="160" y2="265" stroke="rgba(59, 130, 246, 0.08)" stroke-width="1" />
-                        
+                        <ellipse cx="160" cy="220" rx="90" ry="45" fill="none" stroke="rgba(140,90,78,0.15)" stroke-width="1" stroke-dasharray="4 4" />
+                        <ellipse cx="160" cy="220" rx="60" ry="30" fill="none" stroke="rgba(140,90,78,0.1)" stroke-width="1" stroke-dasharray="4 4" />
+                        <ellipse cx="160" cy="220" rx="30" ry="15" fill="none" stroke="rgba(140,90,78,0.05)" stroke-width="1" stroke-dasharray="4 4" />
+                        <line x1="70" y1="220" x2="250" y2="220" stroke="rgba(140,90,78,0.08)" stroke-width="1" />
+                        <line x1="160" y1="175" x2="160" y2="265" stroke="rgba(140,90,78,0.08)" stroke-width="1" />
+
                         <!-- Base Isométrica -->
-                        <polygon points="145,220 160,212 175,220 160,228" fill="rgba(148, 163, 184, 0.15)" stroke="rgba(148, 163, 184, 0.4)" stroke-width="1" />
-                        
+                        <polygon points="145,220 160,212 175,220 160,228" fill="rgba(148,163,184,0.15)" stroke="rgba(148,163,184,0.4)" stroke-width="1" />
+
                         <!-- Mástil / Estructura Vertical -->
-                        <g stroke="rgba(148, 163, 184, 0.4)" stroke-width="1.5">
+                        <g stroke="rgba(148,163,184,0.5)" stroke-width="1.5">
                             <line x1="153" y1="80" x2="153" y2="220" />
                             <line x1="167" y1="80" x2="167" y2="220" />
                             <line x1="153" y1="100" x2="167" y2="100" />
@@ -499,90 +1008,118 @@
                             <line x1="153" y1="200" x2="167" y2="180" />
                             <line x1="153" y1="200" x2="167" y2="220" />
                         </g>
-                        
-                        <!-- Cúspide (Pórtico) -->
-                        <polygon points="153,80 160,55 167,80" fill="none" stroke="rgba(148, 163, 184, 0.5)" stroke-width="1.5" />
-                        
-                        <!-- Tirantes Estructurales Dinámicos -->
-                        <line id="tie-counter" x1="160" y1="55" x2="160" y2="80" stroke="rgba(148, 163, 184, 0.4)" stroke-dasharray="2 2" stroke-width="1" />
-                        <line id="tie-jib" x1="160" y1="55" x2="160" y2="80" stroke="rgba(148, 163, 184, 0.4)" stroke-dasharray="2 2" stroke-width="1" />
-                        
-                        <!-- Pluma, Contrapluma y Cabina -->
+
+                        <!-- Cúspide -->
+                        <polygon points="153,80 160,55 167,80" fill="none" stroke="rgba(148,163,184,0.5)" stroke-width="1.5" />
+
+                        <!-- Tirantes -->
+                        <line id="tie-counter" x1="160" y1="55" x2="160" y2="80" stroke="rgba(148,163,184,0.4)" stroke-dasharray="2 2" stroke-width="1" />
+                        <line id="tie-jib" x1="160" y1="55" x2="160" y2="80" stroke="rgba(148,163,184,0.4)" stroke-dasharray="2 2" stroke-width="1" />
+
+                        <!-- Pluma y Contrapluma -->
                         <line id="counter-jib-line" x1="160" y1="80" x2="120" y2="80" stroke="#475569" stroke-width="2" />
-                        <polygon id="counterweight" points="-5,-4 5,-4 3,6 -3,6" fill="#ef4444" stroke="#b91c1c" stroke-width="1" />
-                        
-                        <line id="jib-line" x1="160" y1="80" x2="260" y2="80" stroke="#3b82f6" stroke-width="3" filter="url(#neon-glow)" />
-                        <polygon id="cabin" points="-4,-6 4,-6 6,3 -2,3" fill="rgba(59, 130, 246, 0.8)" stroke="#2563eb" stroke-width="1" />
-                        
-                        <!-- Carro desplazable (Trolley) -->
+                        <polygon id="counterweight" points="-5,-4 5,-4 3,6 -3,6" fill="#b91c1c" stroke="#7f1d1d" stroke-width="1" />
+
+                        <line id="jib-line" x1="160" y1="80" x2="260" y2="80" stroke="#8C5A4E" stroke-width="3" filter="url(#neon-glow)" />
+                        <polygon id="cabin" points="-4,-6 4,-6 6,3 -2,3" fill="rgba(140,90,78,0.8)" stroke="#8C5A4E" stroke-width="1" />
+
+                        <!-- Carro (Trolley) -->
                         <rect id="trolley" x="-4" y="-2" width="8" height="4" rx="1" fill="#fbbf24" stroke="#d97706" stroke-width="1" />
-                        
+
                         <!-- Cable de Elevación -->
-                        <line id="hoist-cable" x1="0" y1="0" x2="0" y2="50" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="1 1" />
-                        
+                        <line id="hoist-cable" x1="0" y1="0" x2="0" y2="50" stroke="#94a3b8" stroke-width="1" stroke-dasharray="1 1" />
+
                         <!-- Gancho -->
                         <g id="hook-group">
                             <path d="M -2,0 L 2,0 M 0,0 L 0,4 A 2.5,2.5 0 0 1 -2.5,6.5 A 1.2,1.2 0 0 1 -2.5,5" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" />
                         </g>
                     </svg>
                 </div>
-                
-                <!-- Telemetría Numérica -->
-                <div class="telemetry-grid">
-                    <div class="telemetry-item">
-                        <span class="telemetry-label">Giro</span>
-                        <span class="telemetry-value" id="tel-giro">0°</span>
-                        <div style="display:flex; justify-content:center; gap:0.25rem; margin-top:0.25rem;">
-                            <span class="telemetry-dir" id="dir-L">◀ L</span>
-                            <span class="telemetry-dir" id="dir-R">R ▶</span>
-                        </div>
+
+                <!-- Overlay indicators -->
+                <div class="simulator-indicators">
+                    <div class="sim-indicator">
+                        <div class="sim-dot pulse" style="background:#b91c1c; box-shadow:0 0 6px #b91c1c;"></div>
+                        Obstacle Detect
                     </div>
-                    <div class="telemetry-item">
-                        <span class="telemetry-label">Carro</span>
-                        <span class="telemetry-value" id="tel-carro">0%</span>
-                        <div style="display:flex; justify-content:center; gap:0.25rem; margin-top:0.25rem;">
-                            <span class="telemetry-dir" id="dir-B">◀ IN</span>
-                            <span class="telemetry-dir" id="dir-F">OUT ▶</span>
-                        </div>
-                    </div>
-                    <div class="telemetry-item">
-                        <span class="telemetry-label">Gancho</span>
-                        <span class="telemetry-value" id="tel-gancho">0%</span>
-                        <div style="display:flex; justify-content:center; gap:0.25rem; margin-top:0.25rem;">
-                            <span class="telemetry-dir" id="dir-U">▲ UP</span>
-                            <span class="telemetry-dir" id="dir-D">DN ▼</span>
-                        </div>
+                    <div class="sim-indicator">
+                        <div class="sim-dot" style="background:#8C5A4E; box-shadow:0 0 6px #8C5A4E;"></div>
+                        Sim Sync OK
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
+
+        <!-- ========== RIGHT SIDEBAR (Telemetry) ========== -->
+        <aside>
+            <div class="aside-title">TELEMETRÍA EN TIEMPO REAL</div>
+            <div class="telemetry-grid">
+                <div class="telemetry-item">
+                    <span class="telemetry-label">Giro</span>
+                    <span class="telemetry-value" id="tel-giro">0°</span>
+                    <div class="telemetry-dirs">
+                        <span class="telemetry-dir" id="dir-L">◀ L</span>
+                        <span class="telemetry-dir" id="dir-R">R ▶</span>
+                    </div>
+                </div>
+                <div class="telemetry-item">
+                    <span class="telemetry-label">Carro</span>
+                    <span class="telemetry-value" id="tel-carro">0%</span>
+                    <div class="telemetry-dirs">
+                        <span class="telemetry-dir" id="dir-B">◀ IN</span>
+                        <span class="telemetry-dir" id="dir-F">OUT ▶</span>
+                    </div>
+                </div>
+                <div class="telemetry-item">
+                    <span class="telemetry-label">Gancho</span>
+                    <span class="telemetry-value" id="tel-gancho">0%</span>
+                    <div class="telemetry-dirs">
+                        <span class="telemetry-dir" id="dir-U">▲ UP</span>
+                        <span class="telemetry-dir" id="dir-D">DN ▼</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Live log -->
+            <div class="telemetry-log custom-scrollbar" id="telemetry-log"></div>
+        </aside>
     </div>
 
-    <div class="footer-spacer"></div>
+    <!-- ========== FOOTER ========== -->
+    <footer>
+        <div class="footer-left">
+            <span class="footer-brand">CRANE_OS v4.2.0 // SYSTEM HEALTH: STABLE</span>
+            <div class="footer-stats code-font">
+                <span><span class="footer-dot"></span> LATENCY: <span id="footer-latency">--</span>ms</span>
+                <span>UPTIME: <span id="footer-uptime">0</span>H</span>
+            </div>
+        </div>
+        <span class="footer-rec">● RECORDING_TELEMETRY</span>
+    </footer>
 
+    <!-- ========== JAVASCRIPT (preserved functionality) ========== -->
     <script>
         let currentInterval = null;
         let isWebMode = false;
         const SEND_INTERVAL_MS = 100;
-        const STATUS_POLL_MS = 150; // Polling rápido para telemetría
+        const STATUS_POLL_MS = 150;
 
         const modeToggle = document.getElementById('mode-toggle');
         const modeText = document.getElementById('mode-text');
         const controlsContainer = document.getElementById('controls-container');
         const disabledNotice = document.getElementById('disabled-notice');
         const statusDot = document.querySelector('.status-dot');
-        const statusSpan = document.querySelector('.status span');
+        const statusText = document.getElementById('status-text');
 
-        // ---- Telemetry Targets (del backend) ----
+        // ---- Telemetry Targets (from backend) ----
         let targetMode = 'MANUAL';
         let targetCarro = 'S';
         let targetElev = 'S';
         let targetGiro = 'S';
 
         // ---- Physics Simulation (local 2.5D visualizer) ----
-        let angle = 0.5; // Ángulo inicial en radianes (~30°)
-        let carriageDist = 50; // Distancia inicial (15px a 95px)
-        let hookDepth = 60; // Altura del gancho (15px a 120px)
+        let angle = 0.5;
+        let carriageDist = 50;
+        let hookDepth = 60;
 
         const JIB_LENGTH = 100;
         const COUNTER_JIB_LENGTH = 40;
@@ -612,6 +1149,25 @@
         const dirU = document.getElementById('dir-U');
         const dirD = document.getElementById('dir-D');
 
+        // Gauge elements
+        const gaugeGiroArc = document.getElementById('gauge-giro-arc');
+        const gaugeGiroVal = document.getElementById('gauge-giro-val');
+        const carroBarFill = document.getElementById('carro-bar-fill');
+        const ganchoBarFill = document.getElementById('gancho-bar-fill');
+        const carroPosLabel = document.getElementById('carro-pos-label');
+
+        // Telemetry log
+        const telemetryLog = document.getElementById('telemetry-log');
+
+        // Footer
+        const footerLatency = document.getElementById('footer-latency');
+        const footerUptime = document.getElementById('footer-uptime');
+        let uptimeSeconds = 0;
+        setInterval(() => {
+            uptimeSeconds++;
+            footerUptime.textContent = (uptimeSeconds / 3600).toFixed(1);
+        }, 1000);
+
         // ---- Mode Management ----
         const updateModeUI = (webMode) => {
             isWebMode = webMode;
@@ -636,7 +1192,7 @@
         modeToggle.addEventListener('change', async () => {
             try {
                 await fetch('/cmd?action=M');
-                setTimeout(pollStatus, 80); // Consultar rápidamente para reflejar cambio
+                setTimeout(pollStatus, 80);
             } catch (error) {
                 console.error('Error cambiando modo:', error);
             }
@@ -644,33 +1200,50 @@
 
         // Poll telemetry & mode status from ESP32
         const pollStatus = async () => {
+            const t0 = performance.now();
             try {
                 const response = await fetch('/status');
                 const text = await response.text();
-                
-                // Formato de telemetría esperado: MODO,CARRO,ELEV,GIRO
+                const latency = Math.round(performance.now() - t0);
+                footerLatency.textContent = latency;
+
                 const parts = text.trim().split(',');
                 if (parts.length === 4) {
                     targetMode = parts[0];
                     targetCarro = parts[1];
                     targetElev = parts[2];
                     targetGiro = parts[3];
-                    
+
                     updateModeUI(targetMode === 'WEB');
-                    
-                    // Conexión exitosa
+
+                    // Connection OK
                     statusDot.style.backgroundColor = '#10b981';
-                    statusDot.style.boxShadow = '0 0 10px #10b981';
-                    statusSpan.textContent = 'Sistema Online';
+                    statusDot.style.boxShadow = '0 0 8px #10b981';
+                    statusText.textContent = 'LINK: STABLE';
+
+                    // Add to telemetry log
+                    addLogEntry(`MODE:${targetMode} C:${targetCarro} E:${targetElev} G:${targetGiro}`);
                 }
             } catch (error) {
                 console.error('Error consultando telemetria:', error);
-                // Conexión fallida / offline
-                statusDot.style.backgroundColor = '#ef4444';
-                statusDot.style.boxShadow = '0 0 10px #ef4444';
-                statusSpan.textContent = 'Sistema Offline';
+                statusDot.style.backgroundColor = '#b91c1c';
+                statusDot.style.boxShadow = '0 0 8px #b91c1c';
+                statusText.textContent = 'LINK: OFFLINE';
+                footerLatency.textContent = '--';
             }
         };
+
+        // Telemetry log helper
+        function addLogEntry(msg) {
+            const time = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            const entry = document.createElement('div');
+            entry.className = 'log-entry code-font';
+            entry.innerHTML = '<span class="log-time">[' + time + ']</span> ' + msg;
+            telemetryLog.prepend(entry);
+            if (telemetryLog.children.length > 40) {
+                telemetryLog.lastElementChild.remove();
+            }
+        }
 
         // Start polling
         setInterval(pollStatus, STATUS_POLL_MS);
@@ -678,7 +1251,6 @@
 
         // ---- Physics & SVG Animation Loop (60 FPS) ----
         const updatePhysics = () => {
-            // 1. Incrementar / Decrementar valores simulados basados en la telemetría activa
             if (targetGiro === 'R') angle += 0.015;
             else if (targetGiro === 'L') angle -= 0.015;
 
@@ -688,35 +1260,28 @@
             if (targetElev === 'U') hookDepth -= 1.0;
             else if (targetElev === 'D') hookDepth += 1.0;
 
-            // 2. Límites físicos de la grúa
+            // Physical limits
             if (carriageDist < 15) carriageDist = 15;
             if (carriageDist > 95) carriageDist = 95;
-
             if (hookDepth < 15) hookDepth = 15;
             if (hookDepth > 120) hookDepth = 120;
-
-            // Mantener ángulo entre 0 y 2pi
             if (angle < 0) angle += Math.PI * 2;
             if (angle > Math.PI * 2) angle -= Math.PI * 2;
 
-            // 3. Trigonometría de la pluma isométrica (achatamiento de perspectiva Y = 0.5)
+            // Isometric projection
             const cosA = Math.cos(angle);
             const sinA = Math.sin(angle) * 0.5;
 
-            // Coordenadas calculadas
             const jibEndX = TOWER_X + cosA * JIB_LENGTH;
             const jibEndY = TOWER_Y + sinA * JIB_LENGTH;
-
             const counterEndX = TOWER_X - cosA * COUNTER_JIB_LENGTH;
             const counterEndY = TOWER_Y - sinA * COUNTER_JIB_LENGTH;
-
             const tieJibX = TOWER_X + cosA * JIB_LENGTH * 0.6;
             const tieJibY = TOWER_Y + sinA * JIB_LENGTH * 0.6;
-
             const carriageX = TOWER_X + cosA * carriageDist;
             const carriageY = TOWER_Y + sinA * carriageDist;
 
-            // 4. Actualizar Atributos SVG
+            // Update SVG attributes
             jibLine.setAttribute('x1', TOWER_X);
             jibLine.setAttribute('y1', TOWER_Y);
             jibLine.setAttribute('x2', jibEndX);
@@ -729,7 +1294,6 @@
 
             tieJib.setAttribute('x2', tieJibX);
             tieJib.setAttribute('y2', tieJibY);
-
             tieCounter.setAttribute('x2', counterEndX);
             tieCounter.setAttribute('y2', counterEndY);
 
@@ -737,16 +1301,14 @@
             cabin.setAttribute('transform', `translate(${TOWER_X}, ${TOWER_Y}) rotate(${angle * 180 / Math.PI})`);
             trolley.setAttribute('transform', `translate(${carriageX}, ${carriageY}) rotate(${angle * 180 / Math.PI})`);
 
-            // Cable vertical
             hoistCable.setAttribute('x1', carriageX);
             hoistCable.setAttribute('y1', carriageY);
             hoistCable.setAttribute('x2', carriageX);
             hoistCable.setAttribute('y2', carriageY + hookDepth);
 
-            // Gancho
             hookGroup.setAttribute('transform', `translate(${carriageX}, ${carriageY + hookDepth})`);
 
-            // 5. Actualizar interfaz de telemetría numérica
+            // ---- Update UI telemetry ----
             const angleDeg = Math.round(angle * 180 / Math.PI) % 360;
             const carriagePct = Math.round(((carriageDist - 15) / 80) * 100);
             const hookPct = Math.round(((120 - hookDepth) / 105) * 100);
@@ -755,13 +1317,27 @@
             telCarro.textContent = `${carriagePct}%`;
             telGancho.textContent = `${hookPct}%`;
 
-            // 6. Resaltar indicadores de dirección activos
+            // Direction indicators
             updateDirIndicator(dirL, targetGiro === 'L');
             updateDirIndicator(dirR, targetGiro === 'R');
             updateDirIndicator(dirF, targetCarro === 'F');
             updateDirIndicator(dirB, targetCarro === 'B');
             updateDirIndicator(dirU, targetElev === 'U');
             updateDirIndicator(dirD, targetElev === 'D');
+
+            // ---- Update gauge visuals ----
+            // Giro circular gauge (stroke-dashoffset)
+            const giroFraction = angleDeg / 360;
+            const totalDash = 282.7;
+            gaugeGiroArc.setAttribute('stroke-dashoffset', totalDash - (giroFraction * totalDash));
+            gaugeGiroVal.textContent = `${angleDeg}°`;
+
+            // Carro bar fill
+            carroBarFill.style.height = carriagePct + '%';
+            carroPosLabel.textContent = `POS: ${carriagePct}%`;
+
+            // Hook bar fill
+            ganchoBarFill.style.height = hookPct + '%';
 
             requestAnimationFrame(updatePhysics);
         };
@@ -771,7 +1347,6 @@
             else element.classList.remove('active');
         };
 
-        // Iniciar loop visual
         requestAnimationFrame(updatePhysics);
 
         // ---- Command Management ----
@@ -811,6 +1386,12 @@
             btn.addEventListener('mouseup', (e) => { e.preventDefault(); stopCommand(btn); });
             btn.addEventListener('mouseleave', (e) => { e.preventDefault(); stopCommand(btn); });
             btn.addEventListener('touchend', (e) => { e.preventDefault(); stopCommand(btn); });
+        });
+
+        // Button press feedback
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => { btn.style.transform = 'scale(0.95)'; });
+            btn.addEventListener('mouseup', () => { btn.style.transform = 'scale(1)'; });
         });
 
         // Prevent context menu on long press
