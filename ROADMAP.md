@@ -1,5 +1,8 @@
 # Roadmap - Sistema de Control de Grúa Torre
 
+> [!NOTE]
+> **Alineación con OpenSpec:** Las características de la versión 1.0.0 están especificadas formalmente bajo la estructura de capacidades de OpenSpec en `openspec/specs/`. Las futuras características planificadas se diseñarán y verificarán mediante nuevas propuestas de cambio (`openspec change`) dentro de este marco de trabajo.
+
 ## 📅 Versión: 1.0.0 - Versión Base Funcional
 
 **Estado**: ✅ Completado  
