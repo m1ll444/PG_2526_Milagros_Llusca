@@ -1123,6 +1123,11 @@
         let isWebMode = false;
         const SEND_INTERVAL_MS = 100;
         const STATUS_POLL_MS = 2000; // Aumentado a 2s para el fallback liviano
+        // Optional: set to your ESP32's base URL (include protocol), e.g. 'http://192.168.4.1'
+        // If null, the client will use relative '/status' only. If set, client will try
+        // the ESP32 first and fall back to the local relative path on failure.
+        const STATUS_HOST = null;
+        const STATUS_PATH = '/status';
 
         const modeToggle = document.getElementById('mode-toggle');
         const modeText = document.getElementById('mode-text');
@@ -1381,32 +1386,48 @@
         const pollStatus = async () => {
             if (isSerialConnected) return; // Si hay USB, omitir HTTP
 
-            const t0 = performance.now();
-            try {
-                // Se consulta /status al ESP32 (fallback)
-                const response = await fetch('/status');
-                const text = await response.text();
-                const latency = Math.round(performance.now() - t0);
-                footerLatency.textContent = latency;
+            const candidates = [];
+            if (STATUS_HOST) candidates.push(STATUS_HOST.replace(/\/$/, '') + STATUS_PATH);
+            candidates.push(STATUS_PATH);
 
-                const parts = text.trim().split(',');
-                if (parts.length === 4) {
-                    targetMode = parts[0];
-                    targetCarro = parts[1];
-                    targetElev = parts[2];
-                    targetGiro = parts[3];
+            let success = false;
+            for (const url of candidates) {
+                const t0 = performance.now();
+                try {
+                    const response = await fetch(url, { cache: 'no-store' });
+                    if (!response.ok) {
+                        // try next candidate
+                        continue;
+                    }
+                    const text = await response.text();
+                    const latency = Math.round(performance.now() - t0);
+                    footerLatency.textContent = latency;
 
-                    updateModeUI(targetMode === 'WEB');
+                    const parts = text.trim().split(',');
+                    if (parts.length === 4) {
+                        targetMode = parts[0];
+                        targetCarro = parts[1];
+                        targetElev = parts[2];
+                        targetGiro = parts[3];
 
-                    // Conexión estable HTTP
-                    statusDot.style.backgroundColor = '#10b981';
-                    statusDot.style.boxShadow = '0 0 8px #10b981';
-                    statusText.textContent = 'LINK: HTTP STABLE';
+                        updateModeUI(targetMode === 'WEB');
 
-                    addLogEntry(`[HTTP] MODE:${targetMode} C:${targetCarro} E:${targetElev} G:${targetGiro}`);
+                        // Conexión estable HTTP
+                        statusDot.style.backgroundColor = '#10b981';
+                        statusDot.style.boxShadow = '0 0 8px #10b981';
+                        statusText.textContent = `LINK: HTTP (${url})`;
+
+                        addLogEntry(`[HTTP] ${url} MODE:${targetMode} C:${targetCarro} E:${targetElev} G:${targetGiro}`);
+                        success = true;
+                        break;
+                    }
+                } catch (error) {
+                    // try next candidate
+                    console.warn('pollStatus candidate failed:', url, error);
                 }
-            } catch (error) {
-                console.error('Error consultando telemetria HTTP:', error);
+            }
+
+            if (!success) {
                 statusDot.style.backgroundColor = '#b91c1c';
                 statusDot.style.boxShadow = '0 0 8px #b91c1c';
                 statusText.textContent = 'LINK: OFFLINE';
