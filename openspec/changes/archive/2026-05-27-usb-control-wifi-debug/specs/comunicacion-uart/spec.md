@@ -1,8 +1,5 @@
-# Capacidad: Comunicación UART ESP32-Arduino
+## MODIFIED Requirements
 
-## Purpose
-Define el protocolo de comunicación serie bidireccional y el set de comandos que permite coordinar el modo de control y enviar instrucciones de movimiento entre el ESP32 y el Arduino Nano/Uno.
-## Requirements
 ### Requirement: Configuración de Interfaz Serie Bidireccional
 La comunicación física SHALL realizarse mediante dos canales serie independientes:
 - **Canal Principal (Serial hardware, USB):** Comunicación bidireccional entre el Arduino y el navegador web vía cable USB a 9600 bps. Pines D0 (RX) y D1 (TX) del Arduino.
@@ -25,4 +22,3 @@ El protocolo de comandos de movimiento y modo SHALL operar por el canal Serial h
 #### Scenario: Envío de telemetría por USB al navegador
 - **WHEN** Transcurren 100ms desde la última trama de telemetría.
 - **THEN** El Arduino SHALL enviar una trama `S:W,F,S,S\n` por el Serial hardware USB para que el navegador la lea vía Web Serial API.
-
