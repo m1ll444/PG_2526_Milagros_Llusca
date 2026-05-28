@@ -816,9 +816,14 @@
         .footer-rec {
             font-size: 0.6rem;
             font-weight: 700;
-            color: var(--primary);
+            color: rgba(140, 90, 78, 0.4);
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+
+        .footer-rec.active {
+            color: var(--primary);
             animation: pulse-dot 2s infinite;
         }
 
@@ -1114,7 +1119,7 @@
                 <span>UPTIME: <span id="footer-uptime">0</span>H</span>
             </div>
         </div>
-        <span class="footer-rec">● RECORDING_TELEMETRY</span>
+        <span class="footer-rec" id="footer-rec-status">○ USB_DISCONNECTED</span>
     </footer>
 
     <!-- ========== JAVASCRIPT ========== -->
@@ -1123,6 +1128,11 @@
         let isWebMode = false;
         const SEND_INTERVAL_MS = 100;
         const STATUS_POLL_MS = 2000; // Aumentado a 2s para el fallback liviano
+        // Optional: set to your ESP32's base URL (include protocol), e.g. 'http://192.168.4.1'
+        // If null, the client will use relative '/status' only. If set, client will try
+        // the ESP32 first and fall back to the local relative path on failure.
+        const STATUS_HOST = null;
+        const STATUS_PATH = 'status';
 
         const modeToggle = document.getElementById('mode-toggle');
         const modeText = document.getElementById('mode-text');
@@ -1225,9 +1235,16 @@
         // Toggle switch click
         modeToggle.addEventListener('change', async () => {
             try {
-                await sendCommand('M');
-                if (!isSerialConnected) {
-                    setTimeout(pollStatus, 150);
+                // Si estamos en desarrollo local y no conectados por USB, simulamos el cambio para evitar errores HTTP
+                if (!isSerialConnected && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '5500')) {
+                    targetMode = modeToggle.checked ? 'WEB' : 'MANUAL';
+                    updateModeUI(targetMode === 'WEB');
+                    addLogEntry(`[SIMULACIÓN] Modo cambiado a ${targetMode}`);
+                } else {
+                    await sendCommand('M');
+                    if (!isSerialConnected) {
+                        setTimeout(pollStatus, 150);
+                    }
                 }
             } catch (error) {
                 console.error('Error al cambiar de modo:', error);
@@ -1260,6 +1277,13 @@
                     statusDot.style.boxShadow = '0 0 8px #10b981';
                     statusText.textContent = 'LINK: USB STABLE';
                     footerLatency.textContent = '0';
+
+                    // Estado de telemetría activa
+                    const footerRec = document.getElementById('footer-rec-status');
+                    if (footerRec) {
+                        footerRec.textContent = '● RECORDING_TELEMETRY';
+                        footerRec.classList.add('active');
+                    }
 
                     // Iniciar bucle lectura
                     keepReading = true;
@@ -1309,6 +1333,13 @@
             statusDot.style.backgroundColor = '#b91c1c';
             statusDot.style.boxShadow = '0 0 8px #b91c1c';
             footerLatency.textContent = '--';
+
+            // Estado de telemetría inactiva
+            const footerRec = document.getElementById('footer-rec-status');
+            if (footerRec) {
+                footerRec.textContent = '○ USB_DISCONNECTED';
+                footerRec.classList.remove('active');
+            }
 
             addLogEntry("[USB] Desconectado.");
         }
@@ -1377,14 +1408,18 @@
             }
         });
 
-        // ---- HTTP Fallback Polling ----
+        // ---- HTTP Fallback Polling (solo cuando hay un ESP32 real configurado) ----
+        const isLocalDev = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '5500');
+
         const pollStatus = async () => {
             if (isSerialConnected) return; // Si hay USB, omitir HTTP
+            if (!STATUS_HOST) return; // Sin ESP32 configurado, no hacer polling HTTP
 
+            const url = STATUS_HOST.replace(/\/$/, '') + '/' + STATUS_PATH.replace(/^\//, '');
             const t0 = performance.now();
             try {
-                // Se consulta /status al ESP32 (fallback)
-                const response = await fetch('/status');
+                const response = await fetch(url, { cache: 'no-store' });
+                if (!response.ok) return;
                 const text = await response.text();
                 const latency = Math.round(performance.now() - t0);
                 footerLatency.textContent = latency;
@@ -1398,15 +1433,14 @@
 
                     updateModeUI(targetMode === 'WEB');
 
-                    // Conexión estable HTTP
                     statusDot.style.backgroundColor = '#10b981';
                     statusDot.style.boxShadow = '0 0 8px #10b981';
-                    statusText.textContent = 'LINK: HTTP STABLE';
+                    statusText.textContent = `LINK: HTTP (${url})`;
 
                     addLogEntry(`[HTTP] MODE:${targetMode} C:${targetCarro} E:${targetElev} G:${targetGiro}`);
                 }
             } catch (error) {
-                console.error('Error consultando telemetria HTTP:', error);
+                console.warn('pollStatus failed:', url, error);
                 statusDot.style.backgroundColor = '#b91c1c';
                 statusDot.style.boxShadow = '0 0 8px #b91c1c';
                 statusText.textContent = 'LINK: OFFLINE';
@@ -1426,9 +1460,11 @@
             }
         }
 
-        // Start fallback polling (cada 2s)
-        setInterval(pollStatus, STATUS_POLL_MS);
-        pollStatus();
+        // Start fallback polling solo si hay un ESP32 real configurado
+        if (STATUS_HOST && !isLocalDev) {
+            setInterval(pollStatus, STATUS_POLL_MS);
+            pollStatus();
+        }
 
         // ---- Physics & SVG Animation Loop (60 FPS) ----
         const updatePhysics = () => {
@@ -1541,6 +1577,20 @@
                     addLogEntry("[USB] Error de transmisión.");
                 }
             } else {
+                // Si estamos en desarrollo local, simulamos el movimiento directamente
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '5500') {
+                    targetCarro = (cmd === 'F' || cmd === 'B') ? cmd : 'S';
+                    targetElev = (cmd === 'U' || cmd === 'D') ? cmd : 'S';
+                    targetGiro = (cmd === 'L' || cmd === 'R') ? cmd : 'S';
+                    if (cmd === 'S') {
+                        targetCarro = 'S';
+                        targetElev = 'S';
+                        targetGiro = 'S';
+                    }
+                    addLogEntry(`[SIMULACIÓN] Comando: ${cmd}`);
+                    return;
+                }
+
                 // Fallback HTTP
                 try {
                     await fetch(`/cmd?action=${cmd}`);
