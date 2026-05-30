@@ -538,7 +538,7 @@
 
     <div class="legend-container">
         <div class="legend-item"><div class="legend-color" style="background: #f59e0b;"></div>5V / 3.3V (Lógica)</div>
-        <div class="legend-item"><div class="legend-color" style="background: #e11d48; border: 1px dashed white;"></div>12V (Fuerza Motores)</div>
+        <div class="legend-item"><div class="legend-color" style="background: #e11d48; border: 1px dashed white;"></div>9V (Fuerza Motores)</div>
         <div class="legend-item"><div class="legend-color" style="background: #64748b;"></div>GND (Tierra Común)</div>
         <div class="legend-item"><div class="legend-color" style="background: #f59e0b; border: 1px solid #111;"></div>UART (Comando Serie)</div>
         <div class="legend-item"><div class="legend-color" style="background: #3b82f6;"></div>Motor / Joy Carro</div>
@@ -592,12 +592,12 @@
                     <!-- FUENTE DE ALIMENTACION (Arriba Centro) -->
                     <g id="comp-source">
                         <rect x="420" y="20" width="160" height="60" rx="8" class="comp-board board-power"/>
-                        <text x="500" y="44" class="comp-text-title" text-anchor="middle">FUENTE DC 12V</text>
+                        <text x="500" y="44" class="comp-text-title" text-anchor="middle">FUENTE DC 9V</text>
                         <text x="500" y="58" class="comp-text-sub" text-anchor="middle" style="fill: #e11d48;">SALIDA PRINCIPAL</text>
                         
                         <!-- Terminal regleta -->
                         <circle cx="440" cy="80" r="5" class="pin-pad pin-pad-vcc"/>
-                        <text x="440" y="94" class="pin-txt" text-anchor="middle" style="fill: #ef4444;">+12V</text>
+                        <text x="440" y="94" class="pin-txt" text-anchor="middle" style="fill: #ef4444;">+9V</text>
                         
                         <circle cx="560" cy="80" r="5" class="pin-pad pin-pad-gnd"/>
                         <text x="560" y="94" class="pin-txt" text-anchor="middle">GND</text>
@@ -876,13 +876,13 @@
 
                     <!-- ==================== CABLES / RUTEADO ORTOGONAL ==================== -->
 
-                    <!-- === ALIMENTACIÓN DE FUERZA 12V (Color Rosa-Rojo Dashed) === -->
-                    <!-- Fuente 12V -> TB6612 #1 VM -->
-                    <path d="M 440 80 L 440 100 L 450 100 L 450 160 L 470 160" id="wire-pwr-12v-1" class="connection-wire w-vcc-12"/>
-                    <!-- Fuente 12V -> TB6612 #2 VM -->
-                    <path d="M 440 80 L 440 100 L 450 100 L 450 370 L 470 370" id="wire-pwr-12v-2" class="connection-wire w-vcc-12"/>
-                    <!-- Fuente 12V -> Arduino VIN -->
-                    <path d="M 440 80 L 440 100 L 415 100 L 415 370 L 370 370" id="wire-pwr-12v-ard" class="connection-wire w-vcc-12"/>
+                    <!-- === ALIMENTACIÓN DE FUERZA 9V (Color Rosa-Rojo Dashed) === -->
+                    <!-- Fuente 9V -> TB6612 #1 VM -->
+                    <path d="M 440 80 L 440 100 L 450 100 L 450 160 L 470 160" id="wire-pwr-9V-1" class="connection-wire w-vcc-12"/>
+                    <!-- Fuente 9V -> TB6612 #2 VM -->
+                    <path d="M 440 80 L 440 100 L 450 100 L 450 370 L 470 370" id="wire-pwr-9V-2" class="connection-wire w-vcc-12"/>
+                    <!-- Fuente 9V -> Arduino VIN -->
+                    <path d="M 440 80 L 440 100 L 415 100 L 415 370 L 370 370" id="wire-pwr-9V-ard" class="connection-wire w-vcc-12"/>
 
                     <!-- === BUSES DE TIERRAS GND COMÚN (Color Gris Oscuro) === -->
                     <!-- Bus Vertical GND Izquierdo: x = 190. Va desde y = 120 hasta y = 480. -->
@@ -1053,16 +1053,16 @@
                             <td>Referencia común de comunicación UART y lógica</td>
                             <td><span class="tag tag-gnd">GND</span></td>
                         </tr>
-                        <tr id="row-wire-pwr-12v-ard" data-wire="wire-pwr-12v-ard">
-                            <td>Fuente Ext. 12V</td>
-                            <td>+12V (VCC)</td>
+                        <tr id="row-wire-pwr-9V-ard" data-wire="wire-pwr-9V-ard">
+                            <td>Fuente Ext. 9V</td>
+                            <td>+9V (VCC)</td>
                             <td>Arduino Nano</td>
                             <td>VIN</td>
                             <td>Alimentación principal regulada internamente a 5V</td>
                             <td><span class="tag tag-power">Potencia</span></td>
                         </tr>
                         <tr id="row-wire-pwr-gnd-ard" data-wire="wire-pwr-gnd-ard">
-                            <td>Fuente Ext. 12V</td>
+                            <td>Fuente Ext. 9V</td>
                             <td>GND</td>
                             <td>Arduino Nano</td>
                             <td>GND</td>
@@ -1141,16 +1141,16 @@
                             <td>Tierra analógica de referencia para Joystick 2</td>
                             <td><span class="tag tag-gnd">GND</span></td>
                         </tr>
-                        <tr id="row-wire-pwr-12v-1" data-wire="wire-pwr-12v-1">
-                            <td>Fuente Ext. 12V</td>
-                            <td>+12V</td>
+                        <tr id="row-wire-pwr-9V-1" data-wire="wire-pwr-9V-1">
+                            <td>Fuente Ext. 9V</td>
+                            <td>+9V</td>
                             <td>TB6612FNG #1</td>
                             <td>VM</td>
                             <td>Voltaje de potencia para Motores A (Carro) y B (Elev)</td>
                             <td><span class="tag tag-power">Potencia</span></td>
                         </tr>
                         <tr id="row-wire-pwr-gnd-1" data-wire="wire-pwr-gnd-1">
-                            <td>Fuente Ext. 12V</td>
+                            <td>Fuente Ext. 9V</td>
                             <td>GND</td>
                             <td>TB6612FNG #1</td>
                             <td>GND</td>
@@ -1221,16 +1221,16 @@
                             <td>Velocidad del Motor Elevación mediante PWM</td>
                             <td><span class="tag tag-sig">PWM</span></td>
                         </tr>
-                        <tr id="row-wire-pwr-12v-2" data-wire="wire-pwr-12v-2">
-                            <td>Fuente Ext. 12V</td>
-                            <td>+12V</td>
+                        <tr id="row-wire-pwr-9V-2" data-wire="wire-pwr-9V-2">
+                            <td>Fuente Ext. 9V</td>
+                            <td>+9V</td>
                             <td>TB6612FNG #2</td>
                             <td>VM</td>
                             <td>Voltaje de potencia para Motor C (Giro)</td>
                             <td><span class="tag tag-power">Potencia</span></td>
                         </tr>
                         <tr id="row-wire-pwr-gnd-2" data-wire="wire-pwr-gnd-2">
-                            <td>Fuente Ext. 12V</td>
+                            <td>Fuente Ext. 9V</td>
                             <td>GND</td>
                             <td>TB6612FNG #2</td>
                             <td>GND</td>
@@ -1354,19 +1354,19 @@
                 desc: "Conexión de tierra lógica de referencia para el microcontrolador ESP32.",
                 rationale: "Establece el mismo potencial eléctrico de referencia (0V) entre el ESP32 y el Arduino. Sin esta conexión de GND común, las señales de comunicación UART2 (TX2/RX2) tendrían voltajes fluctuantes indescifrables, causando pérdidas de paquetes."
             },
-            "wire-pwr-12v-ard": {
-                title: "Fuente 12V ──▶ Arduino VIN",
-                tag: "POTENCIA 12V",
+            "wire-pwr-9V-ard": {
+                title: "Fuente 9V ──▶ Arduino VIN",
+                tag: "POTENCIA 9V",
                 color: "#e11d48",
-                desc: "Línea de alimentación principal de 12V DC para el funcionamiento del Arduino Nano.",
-                rationale: "Se conecta directamente al pin VIN del Arduino, aprovechando el regulador lineal interno de la placa (L78L05) para reducir los 12V a los 5V necesarios para alimentar su procesador ATmega328P de forma segura y estable."
+                desc: "Línea de alimentación principal de 9V DC para el funcionamiento del Arduino Nano.",
+                rationale: "Se conecta directamente al pin VIN del Arduino, aprovechando el regulador lineal interno de la placa (L78L05) para reducir los 9V a los 5V necesarios para alimentar su procesador ATmega328P de forma segura y estable."
             },
             "wire-pwr-gnd-ard": {
                 title: "Arduino GND ──▶ Tierra Común",
                 tag: "TIERRA (GND)",
                 color: "#64748b",
                 desc: "Retorno de corriente y tierra principal para la alimentación del Arduino.",
-                rationale: "Cierra el circuito eléctrico de alimentación que proviene de la fuente externa de 12V hacia la placa de control principal."
+                rationale: "Cierra el circuito eléctrico de alimentación que proviene de la fuente externa de 9V hacia la placa de control principal."
             },
             "wire-pwr-5v-esp": {
                 title: "Arduino 5V ──▶ ESP32 VIN",
@@ -1431,18 +1431,18 @@
                 desc: "Conexión a tierra de referencia para los componentes analógicos del Joystick 2.",
                 rationale: "Establece el nivel de 0V como referencia para lecturas analógicas en A1 y la detección estable en D6."
             },
-            "wire-pwr-12v-1": {
-                title: "Fuente 12V ──▶ Driver 1 VM",
-                tag: "POTENCIA 12V",
+            "wire-pwr-9V-1": {
+                title: "Fuente 9V ──▶ Driver 1 VM",
+                tag: "POTENCIA 9V",
                 color: "#e11d48",
-                desc: "Línea de potencia de alta corriente (12V) para la alimentación de motores en el Driver #1.",
-                rationale: "Los motores N20 requieren 12V de fuerza para levantar pesos y mover el carro. Este voltaje se ingresa al pin VM (Motor Voltage) para alimentar de forma aislada e independiente a los transistores del puente H."
+                desc: "Línea de potencia de alta corriente (9V) para la alimentación de motores en el Driver #1.",
+                rationale: "Los motores N20 requieren 9V de fuerza para levantar pesos y mover el carro. Este voltaje se ingresa al pin VM (Motor Voltage) para alimentar de forma aislada e independiente a los transistores del puente H."
             },
-            "wire-pwr-12v-2": {
-                title: "Fuente 12V ──▶ Driver 2 VM",
-                tag: "POTENCIA 12V",
+            "wire-pwr-9V-2": {
+                title: "Fuente 9V ──▶ Driver 2 VM",
+                tag: "POTENCIA 9V",
                 color: "#e11d48",
-                desc: "Línea de potencia de alta corriente (12V) para la alimentación de motores en el Driver #2.",
+                desc: "Línea de potencia de alta corriente (9V) para la alimentación de motores en el Driver #2.",
                 rationale: "El motorreductor de giro requiere un suministro independiente y robusto para arrancar la estructura giratoria. Se conecta a VM del Driver #2."
             },
             "wire-pwr-gnd-1": {
@@ -1457,7 +1457,7 @@
                 tag: "TIERRA (GND)",
                 color: "#64748b",
                 desc: "Tierra de retorno común para la etapa lógica y de potencia del Driver #2.",
-                rationale: "Cierra el circuito de alta corriente para el motorreductor de giro de 12V."
+                rationale: "Cierra el circuito de alta corriente para el motorreductor de giro de 9V."
             },
             "wire-pwr-5v-drv1": {
                 title: "Arduino 5V ──▶ Driver 1 VCC",
@@ -1554,8 +1554,8 @@
                 title: "Driver 1 AO1 ──▶ Motor Carro +",
                 tag: "MOTOR POWER OUT",
                 color: "#3b82f6",
-                desc: "Salida de alimentación positiva modulada de 12V del Driver #1 para el Motor de Carro.",
-                rationale: "Transmite la tensión amplificada directa de 12V con inversión de polaridad para impulsar mecánicamente el carro sobre la pluma."
+                desc: "Salida de alimentación positiva modulada de 9V del Driver #1 para el Motor de Carro.",
+                rationale: "Transmite la tensión amplificada directa de 9V con inversión de polaridad para impulsar mecánicamente el carro sobre la pluma."
             },
             "wire-mot-carro-n": {
                 title: "Driver 1 AO2 ──▶ Motor Carro -",
@@ -1568,7 +1568,7 @@
                 title: "Driver 1 BO1 ──▶ Motor Elevación +",
                 tag: "MOTOR POWER OUT",
                 color: "#06b6d4",
-                desc: "Salida de alimentación positiva de 12V del Driver #1 para el Motor de Elevación.",
+                desc: "Salida de alimentación positiva de 9V del Driver #1 para el Motor de Elevación.",
                 rationale: "Permite enviar la energía necesaria a los bornes del motor del cable elevador para levantar las cargas pesadas."
             },
             "wire-mot-elev-n": {
@@ -1582,7 +1582,7 @@
                 title: "Driver 2 CO1 ──▶ Motor Giro +",
                 tag: "MOTOR POWER OUT",
                 color: "#6366f1",
-                desc: "Salida de alimentación de potencia directa de 12V del Driver #2 para el Motorreductor de Giro.",
+                desc: "Salida de alimentación de potencia directa de 9V del Driver #2 para el Motorreductor de Giro.",
                 rationale: "Lleva el voltaje y amperaje necesarios para mover el motoreductor reductor de 30RPM, superando la inercia estática de la grúa."
             },
             "wire-mot-giro-n": {
@@ -1790,3 +1790,4 @@
     </script>
 </body>
 </html>
+
